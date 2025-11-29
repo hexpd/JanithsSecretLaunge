@@ -3,298 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V's Stash // Dynamic</title>
+    <title>V's BYPASS // PROXY</title>
     
     <!-- 
-      THE LOOPHOLE SCRIPT
-      This grabs the 'app' ID from the URL and forces the Smart Banner to match it.
-      Default is FL Studio if nothing is selected.
+      THE EXPLOIT CORE 
+      Dynamic injection of the Smart App Banner meta tag.
+      This tricks Safari into rendering the system-level "OPEN" button.
     -->
     <script>
-        // Map of App Names to Apple IDs
-        const appMap = {
-            'flstudio': '435839315',
-            'signal': '874139669',
-            'pinterest': '429047995',
-            'genshin': '1517783697',
-            'gtasa': '763692274'
+        // The Hit List: Apps that usually get blocked
+        const bypassMap = {
+            'discord': { id: '985746746', scheme: 'discord://' },
+            'spotify': { id: '324684580', scheme: 'spotify://' },
+            'tiktok': { id: '835599320', scheme: 'tiktok://' },
+            'snapchat': { id: '447188370', scheme: 'snapchat://' },
+            'instagram': { id: '389801252', scheme: 'instagram://' },
+            'vpn': { id: '1470562238', scheme: 'protonvpn://' }, // ProtonVPN example
+            'cod': { id: '1465362509', scheme: 'codm://' }
         };
 
-        // Get the requested app from the URL (e.g., ?app=signal)
         const params = new URLSearchParams(window.location.search);
-        const currentApp = params.get('app') || 'flstudio'; // Default to FL Studio
-        const appId = appMap[currentApp];
-
-        // Inject the meta tag before the page renders
-        if (appId) {
-            document.write(`<meta name="apple-itunes-app" content="app-id=${appId}">`);
+        const currentKey = params.get('app');
+        
+        // If an app is selected in the URL, inject the exploit tag immediately
+        if (currentKey && bypassMap[currentKey]) {
+            document.write(`<meta name="apple-itunes-app" content="app-id=${bypassMap[currentKey].id}">`);
         }
     </script>
 
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: #e0e0e0;
-            --accent: #ff3e3e;
-            --secondary: #3eff3e;
-            --card-bg: #161616;
-            --highlight: #2a2a2a;
+            --bg: #050505;
+            --term-green: #0f0;
+            --alert-red: #ff2a2a;
+            --dim: #444;
+            --panel: #111;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg);
+            color: var(--term-green);
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding-bottom: 50px; /* Space for scrolling */
-        }
-
-        /* LOGIN SCREEN */
-        #login-gate {
-            text-align: center;
-            background: var(--card-bg);
-            padding: 2rem;
-            border: 1px solid var(--text-color);
-            box-shadow: 10px 10px 0px var(--text-color);
-            z-index: 100;
-        }
-
-        input {
-            background: black;
-            border: 1px solid var(--text-color);
-            color: var(--secondary);
-            padding: 10px;
-            margin: 5px;
-            font-family: inherit;
-            display: block;
-            width: 200px;
-        }
-
-        button {
-            background: var(--text-color);
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            font-family: inherit;
-        }
-
-        /* MAIN CONTENT */
-        #main-content {
-            display: none;
-            width: 100%;
-            max-width: 600px;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
-            border-bottom: 2px solid var(--accent);
+            text-shadow: 0 0 10px var(--term-green);
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+        }
+
+        .status-bar {
+            width: 100%;
+            max-width: 500px;
+            border-bottom: 1px solid var(--dim);
             padding-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        .instructions {
-            background: #222;
-            border-left: 3px solid var(--secondary);
-            padding: 10px;
-            font-size: 0.8rem;
             margin-bottom: 20px;
-            color: #ccc;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--dim);
         }
 
-        /* SELECTABLE GRID */
-        .app-grid {
+        .exploit-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
+            width: 100%;
+            max-width: 500px;
         }
 
-        .app-card {
-            background: var(--card-bg);
-            border: 1px solid #333;
+        .target-card {
+            background: var(--panel);
+            border: 1px solid var(--dim);
             padding: 15px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            cursor: pointer; /* Clickable whole card */
-            transition: 0.2s;
+            align-items: center;
+            transition: all 0.2s;
         }
 
-        .app-card:hover {
-            background: var(--highlight);
-            border-color: var(--secondary);
+        .target-card:hover {
+            border-color: var(--term-green);
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
         }
 
-        /* Style for the 'Active' card */
-        .app-card.active {
-            border-color: var(--secondary);
-            box-shadow: 0 0 10px rgba(62, 255, 62, 0.2);
+        .target-card.active {
+            border-color: var(--alert-red);
+            background: #1a0505;
         }
 
-        .app-info h3 { margin: 0; font-size: 1.1rem; }
-        .app-info p { margin: 5px 0 0; font-size: 0.75rem; color: #aaa; }
+        .target-info h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; }
+        .target-info p { margin: 0; font-size: 0.7rem; color: #888; }
 
-        .select-btn {
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button, a.btn {
             background: transparent;
-            border: 1px solid #555;
-            color: #555;
-            padding: 5px 15px;
-            font-size: 0.8rem;
-            pointer-events: none; /* Let the card handle the click */
+            border: 1px solid var(--term-green);
+            color: var(--term-green);
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
         }
 
-        .app-card.active .select-btn {
-            border-color: var(--secondary);
-            background: var(--secondary);
+        button:hover, a.btn:hover {
+            background: var(--term-green);
             color: black;
-            content: "SELECTED";
+        }
+        
+        /* Utility to show current banner status */
+        #banner-status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--alert-red);
+            color: black;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.7rem;
+            padding: 2px 0;
+            display: none; /* JS will toggle */
+            z-index: 999;
         }
 
-        .tag {
-            font-size: 0.6rem;
-            padding: 2px 5px;
-            background: #333;
-            margin-left: 10px;
-        }
     </style>
 </head>
 <body>
 
-    <!-- THE GATEKEEPER -->
-    <div id="login-gate">
-        <h2>// AUTHENTICATE</h2>
-        <div style="display: flex; flex-direction: column; align-items: center;">
-            <input type="text" id="username" placeholder="USER ID">
-            <input type="password" id="password" placeholder="PASSCODE">
-            <button onclick="unlockGate()">ACCESS</button>
-        </div>
-        <p id="error-msg" style="color: var(--accent); display: none; margin-top: 10px; font-size: 0.8rem;">ACCESS DENIED</p>
+    <div id="banner-status">SYSTEM BANNER ACTIVE: CHECK TOP OF SCREEN</div>
+
+    <h1>MDM_BREAKER_V3</h1>
+    <div class="status-bar">
+        EXPLOIT VECTOR: SAFARI WEBKIT // SMART BANNER
     </div>
 
-    <!-- THE GOODS -->
-    <div id="main-content">
-        <h1>V's STASH</h1>
+    <div class="exploit-grid">
+
+        <!-- DISCORD -->
+        <div class="target-card" id="card-discord">
+            <div class="target-info">
+                <h3>Discord</h3>
+                <p>Comms</p>
+            </div>
+            <div class="controls">
+                <a href="discord://" class="btn">DIRECT</a>
+                <button onclick="triggerExploit('discord')">BANNER</button>
+            </div>
+        </div>
+
+        <!-- SPOTIFY -->
+        <div class="target-card" id="card-spotify">
+            <div class="target-info">
+                <h3>Spotify</h3>
+                <p>Audio</p>
+            </div>
+            <div class="controls">
+                <a href="spotify://" class="btn">DIRECT</a>
+                <button onclick="triggerExploit('spotify')">BANNER</button>
+            </div>
+        </div>
+
+        <!-- TIKTOK -->
+        <div class="target-card" id="card-tiktok">
+            <div class="target-info">
+                <h3>TikTok</h3>
+                <p>Brainrot</p>
+            </div>
+            <div class="controls">
+                <a href="tiktok://" class="btn">DIRECT</a>
+                <button onclick="triggerExploit('tiktok')">BANNER</button>
+            </div>
+        </div>
+
+        <!-- SNAPCHAT -->
+        <div class="target-card" id="card-snapchat">
+            <div class="target-info">
+                <h3>Snapchat</h3>
+                <p>Ghosts</p>
+            </div>
+            <div class="controls">
+                <a href="snapchat://" class="btn">DIRECT</a>
+                <button onclick="triggerExploit('snapchat')">BANNER</button>
+            </div>
+        </div>
         
-        <div class="instructions">
-            <strong>HOW TO USE:</strong><br>
-            Tap an app below. The page will reload, and the 
-            <strong>Smart Banner</strong> at the top of the screen will update.
-            Then tap "OPEN" or "VIEW" up there.
+        <!-- INSTAGRAM -->
+        <div class="target-card" id="card-instagram">
+            <div class="target-info">
+                <h3>Instagram</h3>
+                <p>The Gram</p>
+            </div>
+            <div class="controls">
+                <a href="instagram://" class="btn">DIRECT</a>
+                <button onclick="triggerExploit('instagram')">BANNER</button>
+            </div>
+        </div>
+        
+         <!-- COD MOBILE -->
+        <div class="target-card" id="card-cod">
+            <div class="target-info">
+                <h3>CoD: Mobile</h3>
+                <p>Shooter</p>
+            </div>
+            <div class="controls">
+                <a href="codm://" class="btn">DIRECT</a>
+                <button onclick="triggerExploit('cod')">BANNER</button>
+            </div>
         </div>
 
-        <div class="app-grid">
-            
-            <!-- FL STUDIO -->
-            <div class="app-card" onclick="selectApp('flstudio')" id="card-flstudio">
-                <div class="app-info">
-                    <h3>FL Studio <span class="tag">DAW</span></h3>
-                    <p>The main event.</p>
-                </div>
-                <button class="select-btn">LOAD BANNER</button>
-            </div>
+    </div>
 
-            <!-- SIGNAL -->
-            <div class="app-card" onclick="selectApp('signal')" id="card-signal">
-                <div class="app-info">
-                    <h3>Signal <span class="tag">SECURE</span></h3>
-                    <p>Encrypted lines.</p>
-                </div>
-                <button class="select-btn">LOAD BANNER</button>
-            </div>
-
-            <!-- PINTEREST -->
-            <div class="app-card" onclick="selectApp('pinterest')" id="card-pinterest">
-                <div class="app-info">
-                    <h3>Pinterest <span class="tag">VIBE</span></h3>
-                    <p>The vision board.</p>
-                </div>
-                <button class="select-btn">LOAD BANNER</button>
-            </div>
-
-            <!-- GENSHIN -->
-            <div class="app-card" onclick="selectApp('genshin')" id="card-genshin">
-                <div class="app-info">
-                    <h3>Genshin <span class="tag">GPU</span></h3>
-                    <p>Visual overload.</p>
-                </div>
-                <button class="select-btn">LOAD BANNER</button>
-            </div>
-
-            <!-- GTA SA -->
-            <div class="app-card" onclick="selectApp('gtasa')" id="card-gtasa">
-                <div class="app-info">
-                    <h3>GTA: SA <span class="tag">GOAT</span></h3>
-                    <p>Grove Street 4 Life.</p>
-                </div>
-                <button class="select-btn">LOAD BANNER</button>
-            </div>
-
-            <!-- ESIGN (No Smart Banner for this one, obviously) -->
-             <div class="app-card" style="border-color: var(--accent);">
-                <div class="app-info">
-                    <h3 style="color: var(--accent);">ESign <span class="tag" style="background:var(--accent); color:black;">HACK</span></h3>
-                    <p>Direct Link Only.</p>
-                </div>
-                <a href="https://esign.yyyue.xyz/" class="select-btn" style="border-color: var(--accent); color: var(--accent); pointer-events: auto; text-decoration: none;">LEAK</a>
-            </div>
-
-        </div>
+    <div style="margin-top: 30px; color: #666; font-size: 0.7rem; max-width: 400px; text-align: center;">
+        INSTRUCTIONS:<br>
+        1. Hit <strong>DIRECT</strong> to force-launch installed apps.<br>
+        2. Hit <strong>BANNER</strong> to reload page and force Safari to show the Store Banner at the top.<br>
+        3. If Banner shows "OPEN", you're in.
     </div>
 
     <script>
-        // Check URL for active app to highlight it
+        // UI Logic to highlight what is active
         const p = new URLSearchParams(window.location.search);
-        const active = p.get('app') || 'flstudio';
-        
-        // Highlight the active card if content is visible
-        function highlightActive() {
-            const card = document.getElementById('card-' + active);
-            if(card) {
+        const activeApp = p.get('app');
+
+        if (activeApp) {
+            const card = document.getElementById('card-' + activeApp);
+            if (card) {
                 card.classList.add('active');
-                card.querySelector('.select-btn').innerText = "BANNER ACTIVE ^";
+                document.getElementById('banner-status').style.display = 'block';
+                document.getElementById('banner-status').innerText = `SYSTEM BANNER ACTIVE FOR: ${activeApp.toUpperCase()} // CHECK TOP`;
             }
         }
 
-        function selectApp(appName) {
-            // Reload page with new query param to trigger new Smart Banner
-            // Keep the login bypass in local storage or just keep it simple
-            // For this demo, we assume you are already logged in visually, 
-            // but since page reloads, we need to bypass gate automatically if recognized.
-            sessionStorage.setItem('v_access', 'granted');
-            window.location.search = '?app=' + appName;
-        }
-
-        function unlockGate() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            
-            if (user === 'Boss' && pass === 'YEEZUS') {
-                sessionStorage.setItem('v_access', 'granted');
-                showContent();
-            } else {
-                document.getElementById('error-msg').style.display = 'block';
-            }
-        }
-
-        function showContent() {
-            document.getElementById('login-gate').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-            document.body.style.paddingTop = '50px';
-            document.body.style.alignItems = 'flex-start';
-            highlightActive();
-        }
-
-        // Auto-unlock if session persists (so reload doesn't lock you out)
-        if (sessionStorage.getItem('v_access') === 'granted') {
-            showContent();
+        function triggerExploit(appName) {
+            // Reload the page with the target app ID to force the meta tag injection
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('app', appName);
+            window.location.href = currentUrl.toString();
         }
     </script>
+
 </body>
 </html>
