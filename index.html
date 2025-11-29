@@ -3,31 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V's BYPASS // PROXY</title>
+    <title>V's BYPASS // SEARCH</title>
     
     <!-- 
       THE EXPLOIT CORE 
-      Dynamic injection of the Smart App Banner meta tag.
-      This tricks Safari into rendering the system-level "OPEN" button.
+      Checks for a 'targetAppId' in the URL. 
+      If found, it injects the Smart Banner meta tag immediately.
     -->
     <script>
-        // The Hit List: Apps that usually get blocked
-        const bypassMap = {
-            'discord': { id: '985746746', scheme: 'discord://' },
-            'spotify': { id: '324684580', scheme: 'spotify://' },
-            'tiktok': { id: '835599320', scheme: 'tiktok://' },
-            'snapchat': { id: '447188370', scheme: 'snapchat://' },
-            'instagram': { id: '389801252', scheme: 'instagram://' },
-            'vpn': { id: '1470562238', scheme: 'protonvpn://' }, // ProtonVPN example
-            'cod': { id: '1465362509', scheme: 'codm://' }
-        };
-
         const params = new URLSearchParams(window.location.search);
-        const currentKey = params.get('app');
+        const targetId = params.get('targetAppId');
         
-        // If an app is selected in the URL, inject the exploit tag immediately
-        if (currentKey && bypassMap[currentKey]) {
-            document.write(`<meta name="apple-itunes-app" content="app-id=${bypassMap[currentKey].id}">`);
+        if (targetId) {
+            // Inject the German App Store banner
+            document.write(`<meta name="apple-itunes-app" content="app-id=${targetId}">`);
         }
     </script>
 
@@ -38,6 +27,7 @@
             --alert-red: #ff2a2a;
             --dim: #444;
             --panel: #111;
+            --input-bg: #222;
         }
 
         body {
@@ -49,210 +39,268 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
+        }
+
+        /* PASSWORD OVERLAY */
+        #auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         h1 {
             text-shadow: 0 0 10px var(--term-green);
             margin-bottom: 5px;
             font-size: 1.5rem;
-        }
-
-        .status-bar {
-            width: 100%;
-            max-width: 500px;
-            border-bottom: 1px solid var(--dim);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
             text-align: center;
-            font-size: 0.8rem;
-            color: var(--dim);
         }
 
-        .exploit-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .target-card {
-            background: var(--panel);
-            border: 1px solid var(--dim);
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
-
-        .target-card:hover {
-            border-color: var(--term-green);
-            box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
-        }
-
-        .target-card.active {
-            border-color: var(--alert-red);
-            background: #1a0505;
-        }
-
-        .target-info h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; }
-        .target-info p { margin: 0; font-size: 0.7rem; color: #888; }
-
-        .controls {
+        .input-group {
+            margin-top: 20px;
             display: flex;
             gap: 10px;
+            width: 100%;
+            max-width: 500px;
         }
 
-        button, a.btn {
+        input {
+            background: var(--input-bg);
+            border: 1px solid var(--term-green);
+            color: var(--term-green);
+            padding: 10px;
+            font-family: inherit;
+            flex-grow: 1;
+            outline: none;
+        }
+
+        button {
             background: transparent;
             border: 1px solid var(--term-green);
             color: var(--term-green);
-            padding: 8px 12px;
+            padding: 10px 15px;
             font-family: inherit;
-            font-size: 0.7rem;
+            font-weight: bold;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
             text-transform: uppercase;
         }
 
-        button:hover, a.btn:hover {
+        button:hover {
             background: var(--term-green);
             color: black;
         }
-        
-        /* Utility to show current banner status */
-        #banner-status {
-            position: fixed;
-            top: 0;
-            left: 0;
+
+        /* RESULTS GRID */
+        #results-area {
             width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .app-card {
+            background: var(--panel);
+            border: 1px solid var(--dim);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .app-card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            border: 1px solid var(--dim);
+        }
+
+        .app-info {
+            flex-grow: 1;
+        }
+
+        .app-info h3 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .app-info p {
+            margin: 2px 0 0 0;
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        #banner-status {
             background: var(--alert-red);
             color: black;
+            width: 100%;
             text-align: center;
             font-weight: bold;
-            font-size: 0.7rem;
-            padding: 2px 0;
-            display: none; /* JS will toggle */
-            z-index: 999;
+            padding: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .hidden-content {
+            display: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
     </style>
 </head>
 <body>
 
-    <div id="banner-status">SYSTEM BANNER ACTIVE: CHECK TOP OF SCREEN</div>
-
-    <h1>MDM_BREAKER_V3</h1>
-    <div class="status-bar">
-        EXPLOIT VECTOR: SAFARI WEBKIT // SMART BANNER
+    <!-- AUTH SCREEN -->
+    <div id="auth-overlay">
+        <h1>ACCESS CONTROL</h1>
+        <div style="display: flex; gap: 10px;">
+            <input type="password" id="pass-input" placeholder="ENTER PASSWORD">
+            <button onclick="checkPass()">UNLOCK</button>
+        </div>
+        <p id="auth-msg" style="color: var(--alert-red); font-size: 0.8rem; margin-top: 10px;"></p>
     </div>
 
-    <div class="exploit-grid">
-
-        <!-- DISCORD -->
-        <div class="target-card" id="card-discord">
-            <div class="target-info">
-                <h3>Discord</h3>
-                <p>Comms</p>
-            </div>
-            <div class="controls">
-                <a href="discord://" class="btn">DIRECT</a>
-                <button onclick="triggerExploit('discord')">BANNER</button>
-            </div>
-        </div>
-
-        <!-- SPOTIFY -->
-        <div class="target-card" id="card-spotify">
-            <div class="target-info">
-                <h3>Spotify</h3>
-                <p>Audio</p>
-            </div>
-            <div class="controls">
-                <a href="spotify://" class="btn">DIRECT</a>
-                <button onclick="triggerExploit('spotify')">BANNER</button>
-            </div>
-        </div>
-
-        <!-- TIKTOK -->
-        <div class="target-card" id="card-tiktok">
-            <div class="target-info">
-                <h3>TikTok</h3>
-                <p>Brainrot</p>
-            </div>
-            <div class="controls">
-                <a href="tiktok://" class="btn">DIRECT</a>
-                <button onclick="triggerExploit('tiktok')">BANNER</button>
-            </div>
-        </div>
-
-        <!-- SNAPCHAT -->
-        <div class="target-card" id="card-snapchat">
-            <div class="target-info">
-                <h3>Snapchat</h3>
-                <p>Ghosts</p>
-            </div>
-            <div class="controls">
-                <a href="snapchat://" class="btn">DIRECT</a>
-                <button onclick="triggerExploit('snapchat')">BANNER</button>
-            </div>
-        </div>
+    <!-- MAIN INTERFACE -->
+    <div id="main-interface" style="display: none; width: 100%; flex-direction: column; align-items: center;">
         
-        <!-- INSTAGRAM -->
-        <div class="target-card" id="card-instagram">
-            <div class="target-info">
-                <h3>Instagram</h3>
-                <p>The Gram</p>
-            </div>
-            <div class="controls">
-                <a href="instagram://" class="btn">DIRECT</a>
-                <button onclick="triggerExploit('instagram')">BANNER</button>
-            </div>
-        </div>
-        
-         <!-- COD MOBILE -->
-        <div class="target-card" id="card-cod">
-            <div class="target-info">
-                <h3>CoD: Mobile</h3>
-                <p>Shooter</p>
-            </div>
-            <div class="controls">
-                <a href="codm://" class="btn">DIRECT</a>
-                <button onclick="triggerExploit('cod')">BANNER</button>
-            </div>
+        <div id="banner-status">SMART BANNER ACTIVE // CHECK TOP OF SAFARI</div>
+
+        <h1>MDM_BREAKER_V4 (DE)</h1>
+        <div style="color: var(--dim); margin-bottom: 20px; font-size: 0.8rem;">
+            REGION: GERMANY (DE) // SEARCH API LINKED
         </div>
 
-    </div>
+        <div class="input-group">
+            <input type="text" id="search-term" placeholder="Search for app (e.g. Call of Duty)">
+            <button onclick="searchItunes()">SEARCH</button>
+        </div>
 
-    <div style="margin-top: 30px; color: #666; font-size: 0.7rem; max-width: 400px; text-align: center;">
-        INSTRUCTIONS:<br>
-        1. Hit <strong>DIRECT</strong> to force-launch installed apps.<br>
-        2. Hit <strong>BANNER</strong> to reload page and force Safari to show the Store Banner at the top.<br>
-        3. If Banner shows "OPEN", you're in.
+        <div id="loading" style="display: none; margin-top: 20px; color: var(--term-green);">
+            SCANNING MAINFRAME...
+        </div>
+
+        <div id="results-area"></div>
     </div>
 
     <script>
-        // UI Logic to highlight what is active
-        const p = new URLSearchParams(window.location.search);
-        const activeApp = p.get('app');
-
-        if (activeApp) {
-            const card = document.getElementById('card-' + activeApp);
-            if (card) {
-                card.classList.add('active');
-                document.getElementById('banner-status').style.display = 'block';
-                document.getElementById('banner-status').innerText = `SYSTEM BANNER ACTIVE FOR: ${activeApp.toUpperCase()} // CHECK TOP`;
+        // CONFIGURATION
+        const ACCESS_CODE = "admin"; // <--- CHANGE THIS PASSWORD BOSS
+        
+        // 1. AUTH LOGIC
+        function checkPass() {
+            const input = document.getElementById('pass-input').value;
+            if(input === ACCESS_CODE) {
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'flex';
+            } else {
+                document.getElementById('auth-msg').innerText = "ACCESS DENIED. FUCK OFF.";
             }
         }
 
-        function triggerExploit(appName) {
-            // Reload the page with the target app ID to force the meta tag injection
+        // 2. SEARCH LOGIC (ITUNES API)
+        async function searchItunes() {
+            const term = document.getElementById('search-term').value;
+            if (!term) return;
+
+            const loader = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results-area');
+            
+            loader.style.display = 'block';
+            resultsDiv.innerHTML = '';
+
+            try {
+                // Hitting the iTunes API with country=DE for German IDs
+                const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=DE&media=software&limit=10`);
+                const data = await response.json();
+
+                loader.style.display = 'none';
+
+                if (data.results.length === 0) {
+                    resultsDiv.innerHTML = '<div style="text-align:center">NO TARGETS FOUND.</div>';
+                    return;
+                }
+
+                data.results.forEach(app => {
+                    const card = document.createElement('div');
+                    card.className = 'app-card';
+                    
+                    // Sanitize checks
+                    const icon = app.artworkUrl60 || '';
+                    const name = app.trackName || 'Unknown';
+                    const genre = app.primaryGenreName || 'App';
+                    const id = app.trackId;
+
+                    card.innerHTML = `
+                        <img src="${icon}" alt="icon">
+                        <div class="app-info">
+                            <h3>${name}</h3>
+                            <p>${genre} | ID: ${id}</p>
+                        </div>
+                        <button onclick="activateExploit('${id}', '${name}')">LOAD</button>
+                    `;
+                    resultsDiv.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                loader.style.display = 'none';
+                resultsDiv.innerHTML = '<div style="color:red">CONNECTION ERROR. CHECK NETWORK.</div>';
+            }
+        }
+
+        // 3. EXPLOIT TRIGGER
+        function activateExploit(id, name) {
+            // Reloads the page with the ID in the URL, forcing the meta tag injection at the top of the script
             const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('app', appName);
+            currentUrl.searchParams.set('targetAppId', id);
+            // Clear the search query to keep URL clean(er)
             window.location.href = currentUrl.toString();
         }
-    </script>
 
+        // 4. CHECK STATUS ON LOAD
+        const urlP = new URLSearchParams(window.location.search);
+        if (urlP.get('targetAppId')) {
+            // If we have an ID, assume we are behind the password wall or just let it load the banner
+            // Ideally we re-prompt for pass, but for usability, if they reload with ID, we show the interface.
+            // If you want to force password even on reload, uncomment the next line:
+            // document.getElementById('auth-overlay').style.display = 'flex'; 
+            
+            // Auto-hide auth if the banner is active to see results? 
+            // Let's just keep the auth wall up by default. 
+            // If the user entered the pass, the DOM is manipulated. 
+            // Since this is a static file reload, state is lost. 
+            // To be annoying, we keep the password. To be nice, we could use sessionStorage.
+            
+            // V's Quality of Life upgrade: Use session storage to remember auth for this session
+            if (sessionStorage.getItem('v_auth') === 'true') {
+                 document.getElementById('auth-overlay').style.display = 'none';
+                 document.getElementById('main-interface').style.display = 'flex';
+                 document.getElementById('banner-status').style.display = 'block';
+            }
+        }
+
+        // Hook the auth button to save session
+        const originalCheck = checkPass;
+        checkPass = function() {
+            const input = document.getElementById('pass-input').value;
+            if(input === ACCESS_CODE) {
+                sessionStorage.setItem('v_auth', 'true');
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'flex';
+            } else {
+                document.getElementById('auth-msg').innerText = "ACCESS DENIED. TRY AGAIN.";
+            }
+        }
+
+    </script>
 </body>
 </html>
