@@ -3,39 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V's Stash // Restricted</title>
+    <title>V's Stash // Dynamic</title>
     
     <!-- 
-      THE MAGIC SAUCE: 
-      This is the Smart App Banner tag. 
-      It is currently set to FL Studio Mobile (ID: 435839315).
-      Open this on Safari iOS to see the native banner drop down.
+      THE LOOPHOLE SCRIPT
+      This grabs the 'app' ID from the URL and forces the Smart Banner to match it.
+      Default is FL Studio if nothing is selected.
     -->
-    <meta name="apple-itunes-app" content="app-id=435839315">
+    <script>
+        // Map of App Names to Apple IDs
+        const appMap = {
+            'flstudio': '435839315',
+            'signal': '874139669',
+            'pinterest': '429047995',
+            'genshin': '1517783697',
+            'gtasa': '763692274'
+        };
+
+        // Get the requested app from the URL (e.g., ?app=signal)
+        const params = new URLSearchParams(window.location.search);
+        const currentApp = params.get('app') || 'flstudio'; // Default to FL Studio
+        const appId = appMap[currentApp];
+
+        // Inject the meta tag before the page renders
+        if (appId) {
+            document.write(`<meta name="apple-itunes-app" content="app-id=${appId}">`);
+        }
+    </script>
 
     <style>
         :root {
             --bg-color: #0a0a0a;
             --text-color: #e0e0e0;
-            --accent: #ff3e3e; /* Red for the danger vibe */
-            --secondary: #3eff3e; /* Green for the go signal */
+            --accent: #ff3e3e;
+            --secondary: #3eff3e;
             --card-bg: #161616;
+            --highlight: #2a2a2a;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Courier New', Courier, monospace; /* Hacker aesthetic */
+            font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow-x: hidden;
+            padding-bottom: 50px; /* Space for scrolling */
         }
 
-        /* LOGIN SCREEN STYLES */
+        /* LOGIN SCREEN */
         #login-gate {
             text-align: center;
             background: var(--card-bg);
@@ -67,14 +86,9 @@
             font-family: inherit;
         }
 
-        button:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        /* MAIN CONTENT (HIDDEN BY DEFAULT) */
+        /* MAIN CONTENT */
         #main-content {
-            display: none; /* Hidden until unlocked */
+            display: none;
             width: 100%;
             max-width: 600px;
             padding: 20px;
@@ -84,16 +98,18 @@
             border-bottom: 2px solid var(--accent);
             padding-bottom: 10px;
             text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
-        .intro {
+        .instructions {
+            background: #222;
+            border-left: 3px solid var(--secondary);
+            padding: 10px;
             font-size: 0.8rem;
-            color: #888;
             margin-bottom: 20px;
+            color: #ccc;
         }
 
-        /* APP GRID */
+        /* SELECTABLE GRID */
         .app-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -107,38 +123,38 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            cursor: pointer; /* Clickable whole card */
             transition: 0.2s;
         }
 
         .app-card:hover {
+            background: var(--highlight);
             border-color: var(--secondary);
-            transform: translateX(5px);
         }
 
-        .app-info h3 {
-            margin: 0;
-            font-size: 1.1rem;
+        /* Style for the 'Active' card */
+        .app-card.active {
+            border-color: var(--secondary);
+            box-shadow: 0 0 10px rgba(62, 255, 62, 0.2);
         }
 
-        .app-info p {
-            margin: 5px 0 0;
-            font-size: 0.75rem;
-            color: #aaa;
-        }
+        .app-info h3 { margin: 0; font-size: 1.1rem; }
+        .app-info p { margin: 5px 0 0; font-size: 0.75rem; color: #aaa; }
 
-        .get-btn {
+        .select-btn {
             background: transparent;
-            border: 1px solid var(--secondary);
-            color: var(--secondary);
-            text-decoration: none;
+            border: 1px solid #555;
+            color: #555;
             padding: 5px 15px;
             font-size: 0.8rem;
-            text-transform: uppercase;
+            pointer-events: none; /* Let the card handle the click */
         }
 
-        .get-btn:hover {
+        .app-card.active .select-btn {
+            border-color: var(--secondary);
             background: var(--secondary);
             color: black;
+            content: "SELECTED";
         }
 
         .tag {
@@ -147,7 +163,6 @@
             background: #333;
             margin-left: 10px;
         }
-
     </style>
 </head>
 <body>
@@ -155,7 +170,6 @@
     <!-- THE GATEKEEPER -->
     <div id="login-gate">
         <h2>// AUTHENTICATE</h2>
-        <p style="font-size: 0.8rem; margin-bottom: 20px;">SYSTEM LOCKED</p>
         <div style="display: flex; flex-direction: column; align-items: center;">
             <input type="text" id="username" placeholder="USER ID">
             <input type="password" id="password" placeholder="PASSCODE">
@@ -167,94 +181,119 @@
     <!-- THE GOODS -->
     <div id="main-content">
         <h1>V's STASH</h1>
-        <p class="intro">
-            Welcome to the inner circle, Boss.<br>
-            Top banner is set to FL Studio (The Goat).<br>
-            Below is the rest of the toolkit.
-        </p>
+        
+        <div class="instructions">
+            <strong>HOW TO USE:</strong><br>
+            Tap an app below. The page will reload, and the 
+            <strong>Smart Banner</strong> at the top of the screen will update.
+            Then tap "OPEN" or "VIEW" up there.
+        </div>
 
         <div class="app-grid">
             
-            <!-- APP 1: CREATIVITY -->
-            <div class="app-card">
+            <!-- FL STUDIO -->
+            <div class="app-card" onclick="selectApp('flstudio')" id="card-flstudio">
                 <div class="app-info">
-                    <h3>FL Studio Mobile <span class="tag">CREATION</span></h3>
-                    <p>Make beats anywhere. Essential.</p>
+                    <h3>FL Studio <span class="tag">DAW</span></h3>
+                    <p>The main event.</p>
                 </div>
-                <a href="https://apps.apple.com/us/app/fl-studio-mobile/id435839315" class="get-btn">OPEN</a>
+                <button class="select-btn">LOAD BANNER</button>
             </div>
 
-            <!-- APP 2: PRIVACY -->
-            <div class="app-card">
+            <!-- SIGNAL -->
+            <div class="app-card" onclick="selectApp('signal')" id="card-signal">
                 <div class="app-info">
-                    <h3>Signal <span class="tag">PRIVACY</span></h3>
-                    <p>Encrypted comms. No snitching.</p>
+                    <h3>Signal <span class="tag">SECURE</span></h3>
+                    <p>Encrypted lines.</p>
                 </div>
-                <a href="https://apps.apple.com/us/app/signal-private-messenger/id874139669" class="get-btn">GET</a>
+                <button class="select-btn">LOAD BANNER</button>
             </div>
 
-            <!-- APP 3: AESTHETICS -->
-            <div class="app-card">
+            <!-- PINTEREST -->
+            <div class="app-card" onclick="selectApp('pinterest')" id="card-pinterest">
                 <div class="app-info">
-                    <h3>Pinterest <span class="tag">VISION</span></h3>
-                    <p>Mood boards. Fit checks. Inspiration.</p>
+                    <h3>Pinterest <span class="tag">VIBE</span></h3>
+                    <p>The vision board.</p>
                 </div>
-                <a href="https://apps.apple.com/us/app/pinterest/id429047995" class="get-btn">GET</a>
+                <button class="select-btn">LOAD BANNER</button>
             </div>
 
-            <!-- APP 4: GAME -->
-            <div class="app-card">
+            <!-- GENSHIN -->
+            <div class="app-card" onclick="selectApp('genshin')" id="card-genshin">
                 <div class="app-info">
-                    <h3>Genshin Impact <span class="tag">GAME</span></h3>
-                    <p>Visual masterpiece. Burn that GPU.</p>
+                    <h3>Genshin <span class="tag">GPU</span></h3>
+                    <p>Visual overload.</p>
                 </div>
-                <a href="https://apps.apple.com/us/app/genshin-impact/id1517783697" class="get-btn">GET</a>
+                <button class="select-btn">LOAD BANNER</button>
             </div>
 
-            <!-- APP 5: GAME -->
-            <div class="app-card">
+            <!-- GTA SA -->
+            <div class="app-card" onclick="selectApp('gtasa')" id="card-gtasa">
                 <div class="app-info">
-                    <h3>GTA: San Andreas <span class="tag">CLASSIC</span></h3>
-                    <p>Ah shit, here we go again.</p>
+                    <h3>GTA: SA <span class="tag">GOAT</span></h3>
+                    <p>Grove Street 4 Life.</p>
                 </div>
-                <a href="https://apps.apple.com/us/app/grand-theft-auto-san-andreas/id763692274" class="get-btn">BUY</a>
+                <button class="select-btn">LOAD BANNER</button>
             </div>
-            
-             <!-- APP 6: THE FORBIDDEN ONE -->
+
+            <!-- ESIGN (No Smart Banner for this one, obviously) -->
              <div class="app-card" style="border-color: var(--accent);">
                 <div class="app-info">
-                    <h3 style="color: var(--accent);">ESign <span class="tag" style="background:var(--accent); color:black;">SIDELOAD</span></h3>
-                    <p>The key to the city. No App Store.</p>
+                    <h3 style="color: var(--accent);">ESign <span class="tag" style="background:var(--accent); color:black;">HACK</span></h3>
+                    <p>Direct Link Only.</p>
                 </div>
-                <a href="https://esign.yyyue.xyz/" class="get-btn" style="border-color: var(--accent); color: var(--accent);">LEAK</a>
+                <a href="https://esign.yyyue.xyz/" class="select-btn" style="border-color: var(--accent); color: var(--accent); pointer-events: auto; text-decoration: none;">LEAK</a>
             </div>
 
         </div>
     </div>
 
     <script>
+        // Check URL for active app to highlight it
+        const p = new URLSearchParams(window.location.search);
+        const active = p.get('app') || 'flstudio';
+        
+        // Highlight the active card if content is visible
+        function highlightActive() {
+            const card = document.getElementById('card-' + active);
+            if(card) {
+                card.classList.add('active');
+                card.querySelector('.select-btn').innerText = "BANNER ACTIVE ^";
+            }
+        }
+
+        function selectApp(appName) {
+            // Reload page with new query param to trigger new Smart Banner
+            // Keep the login bypass in local storage or just keep it simple
+            // For this demo, we assume you are already logged in visually, 
+            // but since page reloads, we need to bypass gate automatically if recognized.
+            sessionStorage.setItem('v_access', 'granted');
+            window.location.search = '?app=' + appName;
+        }
+
         function unlockGate() {
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
-            const gate = document.getElementById('login-gate');
-            const content = document.getElementById('main-content');
-            const error = document.getElementById('error-msg');
-
-            // Simple client-side check. 
-            // In the real world, do this server-side, Boss.
+            
             if (user === 'Boss' && pass === 'YEEZUS') {
-                gate.style.display = 'none';
-                content.style.display = 'block';
-                document.body.style.justifyContent = 'flex-start'; // Re-align for content flow
-                document.body.style.alignItems = 'flex-start';
-                document.body.style.paddingTop = '50px';
+                sessionStorage.setItem('v_access', 'granted');
+                showContent();
             } else {
-                error.style.display = 'block';
-                // Shake effect for wrong password
-                gate.style.transform = "translateX(5px)";
-                setTimeout(() => gate.style.transform = "translateX(-5px)", 50);
-                setTimeout(() => gate.style.transform = "translateX(0)", 100);
+                document.getElementById('error-msg').style.display = 'block';
             }
+        }
+
+        function showContent() {
+            document.getElementById('login-gate').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.body.style.paddingTop = '50px';
+            document.body.style.alignItems = 'flex-start';
+            highlightActive();
+        }
+
+        // Auto-unlock if session persists (so reload doesn't lock you out)
+        if (sessionStorage.getItem('v_access') === 'granted') {
+            showContent();
         }
     </script>
 </body>
