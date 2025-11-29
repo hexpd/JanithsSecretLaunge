@@ -2,385 +2,371 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- ANTI-CACHE HEADERS: SCORCHED EARTH POLICY -->
+    <!-- ANTI-CACHE: NO SURVIVORS -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
-    <title>V // GHOST_PROTOCOL</title>
+    <title>V // KERNEL_EXPLOIT</title>
     
     <!-- 
-      PAYLOAD INJECTION SITE
-      Checks for 'targetAppId' param.
-      Injects Smart Banner Meta Tag immediately.
+      === PAYLOAD INJECTION KERNEL ===
+      Only injects if 'targetAppId' is strictly defined.
     -->
     <script>
         const params = new URLSearchParams(window.location.search);
         const targetId = params.get('targetAppId');
         
         if (targetId) {
-            // INJECTING PAYLOAD
+            // INJECTING KERNEL PATCH (SMART BANNER)
             document.write(`<meta name="apple-itunes-app" content="app-id=${targetId}">`);
         }
     </script>
 
     <style>
-        /* CORE AESTHETICS */
         :root {
-            --bg-color: #050505;
-            --term-green: #33ff00;
-            --term-dim: #1a8000;
-            --alert-red: #ff3333;
-            --scanline: rgba(0, 0, 0, 0.5);
-            --font-stack: 'Courier New', Courier, monospace;
+            --bg: #000000;
+            --text: #ffffff;
+            --accent: #00ff41; /* Hacker Green */
+            --dim: #555555;
+            --console-bg: #111;
+            --font: 'Menlo', 'Consolas', 'Courier New', monospace;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--term-green);
-            font-family: var(--font-stack);
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+            font-size: 12px;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
             min-height: 100vh;
-            text-transform: uppercase;
         }
 
-        /* CRT EFFECT OVERLAY */
-        body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 99999;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        /* TEXT FLICKER ANIMATION */
-        @keyframes flicker {
-            0% { opacity: 0.97; }
-            5% { opacity: 0.95; }
-            10% { opacity: 0.9; }
-            15% { opacity: 0.95; }
-            20% { opacity: 0.99; }
-            25% { opacity: 0.95; }
-            30% { opacity: 0.9; }
-            35% { opacity: 0.96; }
-            40% { opacity: 0.98; }
-            45% { opacity: 0.95; }
-            50% { opacity: 0.99; }
-            55% { opacity: 0.93; }
-            60% { opacity: 0.9; }
-            65% { opacity: 0.96; }
-            70% { opacity: 1; }
-            75% { opacity: 0.97; }
-            80% { opacity: 0.95; }
-            85% { opacity: 0.92; }
-            90% { opacity: 0.96; }
-            95% { opacity: 0.99; }
-            100% { opacity: 0.94; }
-        }
-
-        .flicker {
-            animation: flicker 0.15s infinite;
-            text-shadow: 0 0 4px var(--term-green);
+        /* HEADER / ASCII ART */
+        header {
+            border-bottom: 1px solid var(--dim);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
         h1 {
-            font-size: 1.8rem;
-            border-bottom: 2px dashed var(--term-green);
-            padding-bottom: 10px;
-            width: 100%;
-            max-width: 600px;
-            text-align: center;
-            margin-bottom: 5px;
-            letter-spacing: 2px;
+            font-size: 1.2rem;
+            margin: 0;
+            letter-spacing: -1px;
+            font-weight: bold;
         }
 
-        .subtitle {
-            font-size: 0.7rem;
-            color: var(--term-dim);
-            margin-bottom: 30px;
-            letter-spacing: 1px;
-        }
-
-        /* INPUTS & BUTTONS */
-        .input-group {
+        .status-bar {
             display: flex;
-            gap: 0;
-            width: 100%;
-            max-width: 600px;
-            border: 1px solid var(--term-green);
-            box-shadow: 0 0 10px var(--term-dim);
-        }
-
-        input {
-            background: #000;
-            border: none;
-            color: var(--term-green);
-            padding: 15px;
-            font-family: inherit;
-            font-size: 1rem;
-            flex-grow: 1;
-            outline: none;
-            text-transform: uppercase;
-        }
-
-        input::placeholder {
-            color: var(--term-dim);
-        }
-
-        button {
-            background: var(--term-green);
-            color: #000;
-            border: none;
-            padding: 0 20px;
-            font-family: inherit;
-            font-weight: 900;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: #fff;
-            color: #000;
-            box-shadow: 0 0 15px var(--term-green);
-        }
-
-        /* RESULTS AREA */
-        #console-output {
-            width: 100%;
-            max-width: 600px;
-            margin-top: 20px;
-            border-left: 2px solid var(--term-dim);
-            padding-left: 10px;
-            min-height: 50px;
-        }
-
-        .log-entry {
-            margin-bottom: 5px;
-            font-size: 0.8rem;
-        }
-        .log-entry.success { color: var(--term-green); }
-        .log-entry.error { color: var(--alert-red); }
-        .log-entry.process { color: #fff; }
-
-        .app-card {
-            border: 1px solid var(--term-dim);
-            margin-top: 10px;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: rgba(0, 20, 0, 0.3);
-            transition: border 0.2s;
-        }
-        
-        .app-card:hover {
-            border: 1px solid var(--term-green);
-            background: rgba(0, 40, 0, 0.5);
-        }
-
-        .app-card img {
-            width: 50px;
-            height: 50px;
-            filter: grayscale(100%) contrast(1.2);
-            border: 1px solid var(--term-dim);
-        }
-
-        .app-info {
-            flex-grow: 1;
-        }
-        
-        .app-info h3 { margin: 0; font-size: 0.9rem; color: #fff; }
-        .app-info p { margin: 0; font-size: 0.7rem; color: var(--term-dim); }
-
-        .inject-btn {
-            background: transparent;
-            border: 1px solid var(--alert-red);
-            color: var(--alert-red);
-            padding: 5px 10px;
+            justify-content: space-between;
+            color: var(--dim);
+            margin-top: 5px;
             font-size: 0.7rem;
         }
-        
-        .inject-btn:hover {
-            background: var(--alert-red);
-            color: #000;
-            box-shadow: 0 0 10px var(--alert-red);
-        }
 
-        /* AUTH OVERLAY */
-        #auth-overlay {
+        /* AUTH SCREEN */
+        #auth-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 10000;
+            background: var(--bg);
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
 
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        /* INPUTS */
+        .terminal-input {
+            background: var(--console-bg);
+            border: 1px solid var(--dim);
+            color: var(--accent);
+            padding: 10px;
+            width: 100%;
+            font-family: inherit;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .terminal-input:focus {
+            border-color: var(--accent);
+        }
+
+        /* BUTTONS */
+        .btn {
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            padding: 10px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: inherit;
+            width: 100%;
+            margin-bottom: 5px;
+            transition: 0.1s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
+        .btn-respring {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--dim);
+        }
+        
+        .btn-respring:hover {
+            border-color: red;
+            color: red;
+        }
+
+        /* LOG CONSOLE */
+        #console-window {
+            flex-grow: 1;
+            background: #0a0a0a;
+            border: 1px solid var(--dim);
+            padding: 10px;
+            font-size: 10px;
+            overflow-y: auto;
+            max-height: 40vh;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .log-line { margin-bottom: 2px; }
+        .log-line.info { color: #aaa; }
+        .log-line.success { color: var(--accent); }
+        .log-line.warn { color: yellow; }
+        .log-line.kernel { color: #ff00ff; } /* Pink for kernel panic vibes */
+
+        /* APP GRID */
+        #app-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .app-item {
+            display: flex;
+            align-items: center;
+            background: var(--console-bg);
+            border: 1px solid var(--dim);
+            padding: 8px;
+        }
+
+        .app-item img {
+            width: 40px; height: 40px;
+            margin-right: 10px;
+            border-radius: 8px;
+            filter: grayscale(100%);
+        }
+
+        .app-details {
+            flex-grow: 1;
+        }
+
+        .app-name { font-weight: bold; color: #fff; }
+        .app-bundle { color: var(--dim); font-size: 0.7rem; }
+
+        .btn-inject {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .btn-inject:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* UTILS */
+        .hidden { display: none !important; }
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
     </style>
 </head>
 <body>
 
-    <!-- AUTHENTICATION GATE -->
-    <div id="auth-overlay">
-        <h1 class="flicker" style="color: var(--alert-red); border-color: var(--alert-red);">SECURE GATEWAY</h1>
-        <div style="font-size: 0.8rem; margin-bottom: 20px;">NO_LOGS // INC: GHOST_MODE</div>
-        
-        <div class="input-group" style="max-width: 300px; border-color: var(--alert-red);">
-            <input type="password" id="pass-input" placeholder="ACCESS_CODE" style="color: var(--alert-red);">
-            <button onclick="checkPass()" style="background: var(--alert-red);">UNLOCK</button>
-        </div>
-        <p id="auth-msg" class="blink" style="color: var(--alert-red); margin-top: 15px; height: 20px;"></p>
-    </div>
-
-    <!-- MAIN TERMINAL -->
-    <div id="main-interface" style="display: none; width: 100%; flex-direction: column; align-items: center;">
-        
-        <div id="banner-status" class="blink" style="width:100%; text-align:center; color: var(--alert-red); margin-bottom:10px; display:none;">
-            [!] SMART BANNER INJECTED - CHECK TOP [!]
-        </div>
-
-        <h1 class="flicker">MDM_BREAKER_V5.0</h1>
-        <div class="subtitle">REGION: DE (GERMANY) // STATE: STATELESS</div>
-
-        <div class="input-group">
-            <input type="text" id="search-term" placeholder="ENTER TARGET APP NAME...">
-            <button onclick="initiateScan()">INITIATE SCAN</button>
-        </div>
-
-        <div id="console-output">
-            <div class="log-entry process">> SYSTEM READY... MEMORY PURGED</div>
+    <!-- AUTH GATE -->
+    <div id="auth-layer">
+        <div style="width: 300px; text-align: left;">
+            <div style="margin-bottom: 10px; color: var(--accent);">
+                root@ios-kernel:~$ ./login
+            </div>
+            <input type="password" id="pass-input" class="terminal-input" placeholder="ENTER ROOT PASSWORD">
+            <button class="btn" onclick="attemptLogin()">AUTHENTICATE</button>
+            <div id="auth-msg" style="color: red; margin-top: 5px;"></div>
         </div>
     </div>
+
+    <!-- MAIN INTERFACE -->
+    <header>
+        <h1>MDM_JAILBREAK_v6</h1>
+        <div class="status-bar">
+            <span>UID: 0 (root)</span>
+            <span>AMFI: PATCHED</span>
+            <span>SANDBOX: ESCAPED</span>
+        </div>
+    </header>
+
+    <div id="console-window">
+        <!-- Logs appear here -->
+    </div>
+
+    <div id="controls">
+        <input type="text" id="search-input" class="terminal-input" placeholder="SEARCH BUNDLE ID / APP NAME">
+        
+        <div style="display: flex; gap: 5px;">
+            <button class="btn" style="flex: 2;" onclick="runSearch()">SCAN REPO</button>
+            <button class="btn btn-respring" style="flex: 1;" onclick="respringDevice()">RESPRING</button>
+        </div>
+    </div>
+
+    <div id="app-list"></div>
 
     <script>
-        // --- CONFIGURATION ---
-        const ACCESS_CODE = "admin"; // CHANGE THIS BEFORE DEPLOYMENT
+        // === CONFIG ===
+        const ROOT_PASS = "alpine"; // Default iOS root password lol. CHANGE THIS.
+        const CONSOLE = document.getElementById('console-window');
         
-        const consoleOut = document.getElementById('console-output');
-
-        function log(msg, type='process') {
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${type}`;
-            entry.innerText = `> ${msg}`;
-            consoleOut.prepend(entry);
+        // === BOOT SEQUENCE ===
+        function log(msg, type = 'info') {
+            const line = document.createElement('div');
+            const time = new Date().toLocaleTimeString('en-US', {hour12: false});
+            line.className = `log-line ${type}`;
+            line.innerText = `[${time}] ${msg}`;
+            CONSOLE.appendChild(line);
+            CONSOLE.scrollTop = CONSOLE.scrollHeight;
         }
 
-        // --- AUTH SYSTEM ---
-        function checkPass() {
-            const input = document.getElementById('pass-input').value;
-            if(input === ACCESS_CODE) {
-                // NO SAVING TO SESSION STORAGE. 
-                // WE UNLOCK ONLY FOR THIS INSTANCE.
-                grantAccess();
+        function fakeBoot() {
+            const msgs = [
+                "Initializing kernel exploit...",
+                "Bypassing KPP...",
+                "Patching AMFI...",
+                "Remounting / as rw...",
+                "Bootstrap loaded.",
+                "Starting UI..."
+            ];
+            
+            let delay = 0;
+            msgs.forEach((m, i) => {
+                setTimeout(() => {
+                    log(m, i === msgs.length -1 ? 'success' : 'kernel');
+                }, delay);
+                delay += 150;
+            });
+        }
+
+        // === AUTH ===
+        function attemptLogin() {
+            const p = document.getElementById('pass-input').value;
+            if (p === ROOT_PASS) {
+                document.getElementById('auth-layer').classList.add('hidden');
+                fakeBoot();
+                
+                // Check if we are in an exploited state
+                const urlP = new URLSearchParams(window.location.search);
+                if (urlP.get('targetAppId')) {
+                    setTimeout(() => {
+                        log(`WARNING: EXPLOIT ACTIVE (ID: ${urlP.get('targetAppId')})`, 'warn');
+                        log("Banner should be visible. If stuck, hit RESPRING.", 'info');
+                    }, 1000);
+                }
             } else {
-                document.getElementById('auth-msg').innerText = "INVALID CREDENTIALS. ACCESS DENIED.";
+                document.getElementById('auth-msg').innerText = "Incorrect password.";
                 document.getElementById('pass-input').value = "";
             }
         }
 
-        function grantAccess() {
-            document.getElementById('auth-overlay').style.display = 'none';
-            document.getElementById('main-interface').style.display = 'flex';
-            log("AUTH SUCCESSFUL. ROOT ACCESS GRANTED (TEMPORARY).", "success");
-            
-            // CHECK IF WE JUST LOADED A PAYLOAD
-            const p = new URLSearchParams(window.location.search);
-            if (p.get('targetAppId')) {
-                 document.getElementById('banner-status').style.display = 'block';
-                 log("PAYLOAD ACTIVE. TARGET ID: " + p.get('targetAppId'), "alert-red");
-            }
-        }
+        // === SEARCH LOGIC ===
+        async function runSearch() {
+            const term = document.getElementById('search-input').value;
+            if (!term) return log("Error: Input empty", 'warn');
 
-        // --- SEARCH CORE ---
-        async function initiateScan() {
-            const term = document.getElementById('search-term').value;
-            if (!term) {
-                log("ERROR: NULL INPUT DETECTED", "error");
-                return;
-            }
+            log(`Scanning Apple servers for: ${term}...`);
+            document.getElementById('app-list').innerHTML = '';
 
-            log(`INITIATING SEARCH PROTOCOL FOR: "${term}"...`);
-            log("CONNECTING TO ITUNES API (REGION: DE)...");
-            
-            setTimeout(async () => {
-                try {
-                    const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=DE&media=software&limit=5`);
-                    const data = await response.json();
+            try {
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=DE&media=software&limit=6`);
+                const data = await res.json();
 
-                    if (data.results.length === 0) {
-                        log("SCAN COMPLETE. NO TARGETS LOCATED.", "error");
-                        return;
-                    }
-
-                    log(`SCAN COMPLETE. ${data.results.length} TARGETS IDENTIFIED.`, "success");
-                    renderResults(data.results);
-
-                } catch (error) {
-                    log("FATAL ERROR: CONNECTION SEVERED.", "error");
-                    console.error(error);
+                if (data.results.length === 0) {
+                    log("No bundles found.", 'warn');
+                    return;
                 }
-            }, 500);
+
+                data.results.forEach(app => {
+                    const el = document.createElement('div');
+                    el.className = 'app-item';
+                    el.innerHTML = `
+                        <img src="${app.artworkUrl60}">
+                        <div class="app-details">
+                            <div class="app-name">${app.trackName}</div>
+                            <div class="app-bundle">${app.bundleId}</div>
+                        </div>
+                        <button class="btn-inject" onclick="injectPayload('${app.trackId}')">INJECT</button>
+                    `;
+                    document.getElementById('app-list').appendChild(el);
+                });
+                log(`Found ${data.results.length} candidates.`, 'success');
+
+            } catch (e) {
+                log("Network error.", 'warn');
+            }
         }
 
-        function renderResults(results) {
-            const existingCards = document.querySelectorAll('.app-card');
-            existingCards.forEach(e => e.remove());
-
-            results.forEach(app => {
-                const card = document.createElement('div');
-                card.className = 'app-card';
-                const icon = app.artworkUrl60 || '';
-                
-                card.innerHTML = `
-                    <img src="${icon}">
-                    <div class="app-info">
-                        <h3>${app.trackName}</h3>
-                        <p>ID: ${app.trackId} | BUNDLE: ${app.bundleId}</p>
-                    </div>
-                    <button class="inject-btn" onclick="executeExploit('${app.trackId}')">INJECT</button>
-                `;
-                consoleOut.appendChild(card);
-            });
-        }
-
-        // --- EXPLOIT EXECUTION ---
-        function executeExploit(id) {
-            log(`TARGET ACQUIRED: ${id}`, "alert-red");
-            log("INJECTING SMART BANNER META...", "process");
-            log("FLUSHING BUFFER AND RELOADING...", "process");
+        // === EXPLOIT LOGIC ===
+        function injectPayload(id) {
+            log(`Preparing payload for ID: ${id}`, 'kernel');
+            log("Stopping services...", 'info');
             
             setTimeout(() => {
-                const currentUrl = new URL(window.location.href);
-                // Clear any existing params to prevent stacking
-                currentUrl.search = ''; 
-                currentUrl.searchParams.set('targetAppId', id);
+                const url = new URL(window.location.href);
+                // WIPE EVERYTHING to ensure no overlap
+                url.search = '';
+                // Set only the target
+                url.searchParams.set('targetAppId', id);
                 
-                // Force reload
-                window.location.href = currentUrl.toString();
+                log("Rebooting into exploited state...", 'success');
+                window.location.href = url.toString();
+            }, 800);
+        }
+
+        // === RESPRING (RESET) LOGIC ===
+        function respringDevice() {
+            log("RESPRING INITIATED...", 'warn');
+            log("Clearing kernel cache...", 'info');
+            
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.search = ''; // NUKE PARAMETERS
+                window.location.href = url.toString();
             }, 500);
         }
 
-        // --- KEY LISTENERS ---
-        document.getElementById('pass-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPass();
+        // KEY LISTENER
+        document.getElementById('pass-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') attemptLogin();
         });
-        document.getElementById('search-term').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') initiateScan();
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') runSearch();
         });
 
     </script>
