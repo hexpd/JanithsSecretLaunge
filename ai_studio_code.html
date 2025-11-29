@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V's Stash // Restricted</title>
+    
+    <!-- 
+      THE MAGIC SAUCE: 
+      This is the Smart App Banner tag. 
+      It is currently set to FL Studio Mobile (ID: 435839315).
+      Open this on Safari iOS to see the native banner drop down.
+    -->
+    <meta name="apple-itunes-app" content="app-id=435839315">
+
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e0e0e0;
+            --accent: #ff3e3e; /* Red for the danger vibe */
+            --secondary: #3eff3e; /* Green for the go signal */
+            --card-bg: #161616;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace; /* Hacker aesthetic */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* LOGIN SCREEN STYLES */
+        #login-gate {
+            text-align: center;
+            background: var(--card-bg);
+            padding: 2rem;
+            border: 1px solid var(--text-color);
+            box-shadow: 10px 10px 0px var(--text-color);
+            z-index: 100;
+        }
+
+        input {
+            background: black;
+            border: 1px solid var(--text-color);
+            color: var(--secondary);
+            padding: 10px;
+            margin: 5px;
+            font-family: inherit;
+            display: block;
+            width: 200px;
+        }
+
+        button {
+            background: var(--text-color);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* MAIN CONTENT (HIDDEN BY DEFAULT) */
+        #main-content {
+            display: none; /* Hidden until unlocked */
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        h1 {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .intro {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        /* APP GRID */
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.2s;
+        }
+
+        .app-card:hover {
+            border-color: var(--secondary);
+            transform: translateX(5px);
+        }
+
+        .app-info h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .app-info p {
+            margin: 5px 0 0;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        .get-btn {
+            background: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            text-decoration: none;
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .get-btn:hover {
+            background: var(--secondary);
+            color: black;
+        }
+
+        .tag {
+            font-size: 0.6rem;
+            padding: 2px 5px;
+            background: #333;
+            margin-left: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- THE GATEKEEPER -->
+    <div id="login-gate">
+        <h2>// AUTHENTICATE</h2>
+        <p style="font-size: 0.8rem; margin-bottom: 20px;">SYSTEM LOCKED</p>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <input type="text" id="username" placeholder="USER ID">
+            <input type="password" id="password" placeholder="PASSCODE">
+            <button onclick="unlockGate()">ACCESS</button>
+        </div>
+        <p id="error-msg" style="color: var(--accent); display: none; margin-top: 10px; font-size: 0.8rem;">ACCESS DENIED</p>
+    </div>
+
+    <!-- THE GOODS -->
+    <div id="main-content">
+        <h1>V's STASH</h1>
+        <p class="intro">
+            Welcome to the inner circle, Boss.<br>
+            Top banner is set to FL Studio (The Goat).<br>
+            Below is the rest of the toolkit.
+        </p>
+
+        <div class="app-grid">
+            
+            <!-- APP 1: CREATIVITY -->
+            <div class="app-card">
+                <div class="app-info">
+                    <h3>FL Studio Mobile <span class="tag">CREATION</span></h3>
+                    <p>Make beats anywhere. Essential.</p>
+                </div>
+                <a href="https://apps.apple.com/us/app/fl-studio-mobile/id435839315" class="get-btn">OPEN</a>
+            </div>
+
+            <!-- APP 2: PRIVACY -->
+            <div class="app-card">
+                <div class="app-info">
+                    <h3>Signal <span class="tag">PRIVACY</span></h3>
+                    <p>Encrypted comms. No snitching.</p>
+                </div>
+                <a href="https://apps.apple.com/us/app/signal-private-messenger/id874139669" class="get-btn">GET</a>
+            </div>
+
+            <!-- APP 3: AESTHETICS -->
+            <div class="app-card">
+                <div class="app-info">
+                    <h3>Pinterest <span class="tag">VISION</span></h3>
+                    <p>Mood boards. Fit checks. Inspiration.</p>
+                </div>
+                <a href="https://apps.apple.com/us/app/pinterest/id429047995" class="get-btn">GET</a>
+            </div>
+
+            <!-- APP 4: GAME -->
+            <div class="app-card">
+                <div class="app-info">
+                    <h3>Genshin Impact <span class="tag">GAME</span></h3>
+                    <p>Visual masterpiece. Burn that GPU.</p>
+                </div>
+                <a href="https://apps.apple.com/us/app/genshin-impact/id1517783697" class="get-btn">GET</a>
+            </div>
+
+            <!-- APP 5: GAME -->
+            <div class="app-card">
+                <div class="app-info">
+                    <h3>GTA: San Andreas <span class="tag">CLASSIC</span></h3>
+                    <p>Ah shit, here we go again.</p>
+                </div>
+                <a href="https://apps.apple.com/us/app/grand-theft-auto-san-andreas/id763692274" class="get-btn">BUY</a>
+            </div>
+            
+             <!-- APP 6: THE FORBIDDEN ONE -->
+             <div class="app-card" style="border-color: var(--accent);">
+                <div class="app-info">
+                    <h3 style="color: var(--accent);">ESign <span class="tag" style="background:var(--accent); color:black;">SIDELOAD</span></h3>
+                    <p>The key to the city. No App Store.</p>
+                </div>
+                <a href="https://esign.yyyue.xyz/" class="get-btn" style="border-color: var(--accent); color: var(--accent);">LEAK</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function unlockGate() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const gate = document.getElementById('login-gate');
+            const content = document.getElementById('main-content');
+            const error = document.getElementById('error-msg');
+
+            // Simple client-side check. 
+            // In the real world, do this server-side, Boss.
+            if (user === 'Boss' && pass === 'YEEZUS') {
+                gate.style.display = 'none';
+                content.style.display = 'block';
+                document.body.style.justifyContent = 'flex-start'; // Re-align for content flow
+                document.body.style.alignItems = 'flex-start';
+                document.body.style.paddingTop = '50px';
+            } else {
+                error.style.display = 'block';
+                // Shake effect for wrong password
+                gate.style.transform = "translateX(5px)";
+                setTimeout(() => gate.style.transform = "translateX(-5px)", 50);
+                setTimeout(() => gate.style.transform = "translateX(0)", 100);
+            }
+        }
+    </script>
+</body>
+</html>
