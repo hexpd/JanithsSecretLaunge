@@ -2,288 +2,308 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>checkm8 // exploit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- DYNAMIC ID INJECTION -->
+    <!-- === THE MASTER KEY: SYNCHRONOUS INJECTION === -->
+    <!-- This MUST run before anything else so Safari respects the banner -->
     <script>
-        // Wrapped in a function to avoid variable conflicts
         (function() {
-            var p = new URLSearchParams(window.location.search);
-            var id = p.get('id');
-            if (id) {
-                document.write('<meta name="apple-itunes-app" content="app-id=' + id + '">');
+            const params = new URLSearchParams(window.location.search);
+            const targetId = params.get('id');
+            // If we have an ID, write the tag instantly.
+            if (targetId) {
+                document.write('<meta name="apple-itunes-app" content="app-id=' + targetId + '">');
             }
         })();
     </script>
+    
+    <title>checkm8 // exploit</title>
 
     <style>
-        body {
-            background-color: #000;
-            color: #0f0;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
-            font-size: 14px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        #console {
-            width: 100%;
-            flex-grow: 1;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .line { margin-bottom: 2px; opacity: 0.9; }
-        
-        /* Cursor Blink */
-        .cursor {
-            display: inline-block;
-            width: 8px;
-            height: 15px;
-            background-color: #0f0;
-            animation: blink 1s infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&display=swap');
+
+        :root {
+            --bg: #000000;
+            --text: #e0e0e0;
+            --dim: #666;
+            --accent: #444; 
+            --font: 'Fira Code', monospace;
         }
 
-        /* Overlays */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            margin: 0; padding: 0;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        #main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ASCII HEADER */
+        .ascii-art {
+            white-space: pre;
+            font-size: 8px;
+            line-height: 8px;
+            color: var(--dim);
+            margin-bottom: 20px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        /* TERMINAL WINDOW */
+        #console-window {
+            flex: 1;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 10px;
+            overflow-y: hidden;
+            margin-bottom: 15px;
+            font-family: var(--font);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .log-entry { margin-bottom: 2px; word-break: break-all; }
+        .log-entry.panic { color: #ff3333; }
+        .log-entry.success { color: #33ff33; }
+        .log-entry.info { color: #aaa; }
+
+        /* SEARCH UI */
+        #search-ui { display: flex; flex-direction: column; gap: 10px; }
+        
+        .control-group { display: flex; gap: 10px; }
+
+        input {
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            font-family: var(--font);
+            font-size: 12px;
+            flex: 1;
+            outline: none;
+            text-transform: uppercase;
+        }
+        input:focus { border-color: #fff; }
+
+        button {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 12px 20px;
+            font-family: var(--font);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        button:active { background: #555; }
+        
+        /* EXPLOIT UI (Hidden by default) */
+        #exploit-ui { display: none; }
+
+        .btn-pwn {
+            background: #e0e0e0;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            width: 100%;
+        }
+
+        /* THE X BUTTON (RESET) */
+        .btn-exit {
+            position: absolute;
+            top: 0px;
+            right: 15px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #666;
+            width: 25px; 
+            height: 25px;
+            display: flex; 
+            align-items: center; 
             justify-content: center;
-            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
             z-index: 999;
         }
+        .btn-exit:hover { border-color: red; color: red; }
 
-        /* Inputs */
-        input {
-            background: transparent;
-            border: 1px solid #0f0;
-            color: #0f0;
-            padding: 10px;
-            font-family: inherit;
-            margin-top: 10px;
-            outline: none;
-            width: 300px;
-            text-align: center;
-            text-transform: uppercase;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        input::placeholder { color: #004400; }
-        
-        /* Search Results Dropdown */
-        #results-container {
-            width: 300px;
-            margin-top: 5px;
-            border: 1px solid #004400;
-            display: none;
-            max-height: 200px;
+        /* APP LIST */
+        #app-drawer {
+            max-height: 150px;
             overflow-y: auto;
-            background: #000;
+            border: 1px solid #222;
+            margin-top: 5px;
+            display: none;
         }
-        
-        .result-item {
-            padding: 8px;
-            border-bottom: 1px solid #002200;
+        .app-row {
+            padding: 10px;
+            border-bottom: 1px solid #222;
+            background: #050505;
+            display: flex; justify-content: space-between; align-items: center;
             cursor: pointer;
-            text-align: left;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
         }
-        
-        .result-item:hover {
-            background-color: #0f0;
-            color: #000;
-        }
+        .app-row:hover { background: #151515; color: #fff; }
 
         .hidden { display: none !important; }
-        .error { color: #f00; text-shadow: 0 0 5px #f00; }
-        .success { color: #0f0; font-weight: bold; text-shadow: 0 0 5px #0f0; }
-        
-        .header { border-bottom: 1px solid #0f0; margin-bottom: 20px; padding-bottom: 5px; letter-spacing: 2px;}
-        
-        /* Scrollbar styling for the results */
-        #results-container::-webkit-scrollbar { width: 5px; }
-        #results-container::-webkit-scrollbar-thumb { background: #0f0; }
-        #results-container::-webkit-scrollbar-track { background: #002200; }
     </style>
 </head>
 <body>
 
-    <!-- SCREEN 1: TARGET SEARCH (Auto-suggest) -->
-    <div id="target-overlay" class="overlay hidden">
-        <div class="header">>> TARGET ACQUISITION SYSTEM <<</div>
-        <div>ENTER APP NAME TO SCAN DATABASE:</div>
-        
-        <input type="text" id="app-search" placeholder="SEARCHING..." autocomplete="off" autofocus>
-        
-        <!-- Results Dropdown -->
-        <div id="results-container"></div>
-        
-        <div id="status-line" style="margin-top:10px; font-size: 11px; color: #005500;">WAITING FOR INPUT...</div>
-    </div>
+    <div id="main-container">
+        <!-- RESET BUTTON: Clears the URL to let you pick a new app -->
+        <div class="btn-exit" onclick="hardReset()" title="Exit Recovery Mode">X</div>
 
-    <!-- SCREEN 2: PASSWORD LOCK -->
-    <div id="login-overlay" class="overlay hidden">
-        <div class="header">>> SECURE CONNECTION ESTABLISHED <<</div>
-        <div style="font-size: 10px; color: #005500; margin-bottom: 10px;">LOCKED_TARGET_ID: <span id="disp-id" style="color:#0f0;"></span></div>
-        <input type="password" id="password" placeholder="ENTER PASSCODE" autocomplete="off">
-        <div id="msg" style="margin-top:15px; height: 20px; font-size: 12px;"></div>
-    </div>
+        <div class="ascii-art">
+   _______  _    _  _   _ 
+  |__   __|| |  | || \ | |
+     | |   | |__| ||  \| |
+     | |   |  __  || . ` |
+     | |   | |  | || |\  |
+     |_|   |_|  |_||_| \_|
+     UNTETHERED // v1.0
+        </div>
 
-    <!-- SCREEN 3: EXPLOIT CONSOLE -->
-    <div id="console" class="hidden">
-        <div class="line">Initializing checkm8 environment...</div>
+        <div id="console-window">
+            <div class="log-entry info">checkm8 initialized.</div>
+        </div>
+
+        <!-- SEARCH UI (Visible if NO ID in URL) -->
+        <div id="search-ui">
+            <div class="control-group">
+                <input type="text" id="target-search" placeholder="ENTER TARGET NAME (E.G. SPOTIFY)">
+                <button onclick="searchApps()">SCAN_DB</button>
+            </div>
+            <div id="app-drawer"></div>
+        </div>
+
+        <!-- EXPLOIT UI (Visible if ID exists in URL) -->
+        <div id="exploit-ui">
+            <button class="btn-pwn" onclick="startExploit()">EXECUTE PAYLOAD</button>
+            <div style="margin-top: 10px; color: #444; font-size: 9px; text-align: center;">
+                WAITING FOR USER INPUT...
+            </div>
+        </div>
     </div>
 
     <script>
-        // -- CONFIG --
-        // Now this won't crash because we scoped the top one
+        const TERMINAL = document.getElementById('console-window');
         const urlParams = new URLSearchParams(window.location.search);
         const currentId = urlParams.get('id');
-        const isDirty = urlParams.has('payload_target') || urlParams.has('panic');
 
-        const targetOverlay = document.getElementById('target-overlay');
-        const loginOverlay = document.getElementById('login-overlay');
-        const consoleDiv = document.getElementById('console');
-        
-        // -- INIT --
+        // === INITIALIZATION ===
         window.onload = function() {
-            if (isDirty) {
-                // If URL is dirty, scrub it but keep the ID
-                setTimeout(() => {
-                    window.location.href = window.location.origin + window.location.pathname + '?id=' + currentId;
-                }, 5000);
-            }
-
-            if (!currentId) {
-                // No ID? Show Search
-                targetOverlay.classList.remove('hidden');
-                document.getElementById('app-search').focus();
+            if (currentId) {
+                // If ID is present, we are in EXPLOIT MODE
+                document.getElementById('search-ui').classList.add('hidden');
+                document.getElementById('exploit-ui').style.display = 'block';
+                
+                log(`Target Locked: ${currentId}`, "success");
+                log("Smart Banner Injection: ATTEMPTED", "info");
+                log("Ready to execute.", "info");
             } else {
-                // ID Exists? Show Password
-                loginOverlay.classList.remove('hidden');
-                document.getElementById('disp-id').innerText = currentId;
-                document.getElementById('password').focus();
+                // No ID, we are in SEARCH MODE
+                log("Waiting for target selection...", "info");
             }
         };
 
-        // -- AUTOCOMPLETE SEARCH LOGIC --
-        const searchInput = document.getElementById('app-search');
-        const resultsContainer = document.getElementById('results-container');
-        const statusLine = document.getElementById('status-line');
-        let debounceTimer;
+        // === LOGGING UTILITY ===
+        function log(msg, type='info') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerText = `> ${msg}`;
+            TERMINAL.appendChild(div);
+            TERMINAL.scrollTop = TERMINAL.scrollHeight;
+        }
 
-        searchInput.addEventListener('input', function() {
-            const term = this.value.trim();
-            resultsContainer.style.display = 'none';
-            resultsContainer.innerHTML = '';
+        // === SEARCH FUNCTION ===
+        async function searchApps() {
+            const q = document.getElementById('target-search').value;
+            if (!q) return log("Error: Input empty", "panic");
+
+            log(`Scanning Apple Servers for "${q}"...`, "info");
+            const drawer = document.getElementById('app-drawer');
+            drawer.style.display = 'block';
+            drawer.innerHTML = '<div style="padding:10px; color:#666;">Contacting iTunes API...</div>';
+
+            try {
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&country=US&media=software&limit=5`);
+                const data = await res.json();
+                
+                drawer.innerHTML = '';
+
+                if (data.resultCount === 0) return log("No targets found.", "panic");
+
+                data.results.forEach(app => {
+                    const el = document.createElement('div');
+                    el.className = 'app-row';
+                    el.innerHTML = `<span>${app.trackName}</span> <span style="color:#555;">[${app.trackId}]</span>`;
+                    
+                    // THIS IS THE KEY PART:
+                    // We don't just set a variable. We RELOAD the page with the ID.
+                    el.onclick = () => {
+                        log(`Locking target: ${app.trackId}...`, "success");
+                        setTimeout(() => {
+                            window.location.search = `?id=${app.trackId}`;
+                        }, 500);
+                    };
+                    drawer.appendChild(el);
+                });
+
+            } catch(e) {
+                log("Connection failed.", "panic");
+            }
+        }
+
+        // === HARD RESET (BACK TO SEARCH) ===
+        function hardReset() {
+            // Strips the query string, effectively resetting the app
+            window.location.href = window.location.origin + window.location.pathname;
+        }
+
+        // === FAKE EXPLOIT ANIMATION ===
+        function startExploit() {
+            const btn = document.querySelector('.btn-pwn');
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
             
-            clearTimeout(debounceTimer); 
+            const steps = [
+                "Setting up heap spray...",
+                "Exploiting kernel task...",
+                "Rewriting AMFI credentials...",
+                "Injecting dyld_shared_cache...",
+                "Respringing..."
+            ];
 
-            if (term.length < 2) {
-                statusLine.innerText = "WAITING FOR INPUT...";
-                return;
-            }
-
-            statusLine.innerText = "SCANNING...";
-
-            // Debounce to avoid hitting API on every keypress (wait 300ms)
-            debounceTimer = setTimeout(() => {
-                fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=software&limit=6`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.resultCount > 0) {
-                            statusLine.innerText = `[+] ${data.resultCount} TARGETS IDENTIFIED`;
-                            resultsContainer.style.display = 'block';
-                            
-                            data.results.forEach(app => {
-                                const div = document.createElement('div');
-                                div.className = 'result-item';
-                                div.innerHTML = `<span>${app.trackName}</span> <span>[${app.trackId}]</span>`;
-                                
-                                // ON CLICK: LOCK ID AND RELOAD
-                                div.onclick = function() {
-                                    statusLine.innerText = `LOCKING TARGET: ${app.trackId}...`;
-                                    window.location.search = `?id=${app.trackId}`;
-                                };
-                                
-                                resultsContainer.appendChild(div);
-                            });
-                        } else {
-                            statusLine.innerText = "[-] NO TARGETS FOUND";
-                        }
-                    })
-                    .catch(err => {
-                        statusLine.innerText = "[!] CONNECTION ERROR";
-                        console.error(err);
-                    });
-            }, 300);
-        });
-
-        // -- PASSWORD LOGIC --
-        const passInput = document.getElementById('password');
-        const msg = document.getElementById('msg');
-
-        passInput.addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                if (passInput.value === 'checkm8') {
-                    msg.innerHTML = '<span class="success">ACCESS GRANTED. DEPLOYING...</span>';
-                    passInput.disabled = true;
-                    setTimeout(() => {
-                        loginOverlay.classList.add('hidden');
-                        consoleDiv.classList.remove('hidden');
-                        startVerboseLog();
-                    }, 1000);
-                } else {
-                    msg.innerHTML = '<span class="error">ACCESS DENIED.</span>';
-                    passInput.value = '';
-                }
-            }
-        });
-
-        // -- FAKE LOGS --
-        const logs = [
-            "[+] heap_spray_init() success",
-            "[*] checking affinity...",
-            "[+] device: iPhone10,6 (d221ap)",
-            "[*] exploiting bootrom...",
-            "[!] checkm8 triggered!",
-            "[*] patching kernel...",
-            "[*] rewriting AMFI...",
-            "[*] remounting / as rw...",
-            "[+] bootstrap injected",
-            "[*] triggering WebKit banner...",
-            "[+] execution complete."
-        ];
-
-        function startVerboseLog() {
             let i = 0;
-            function printLog() {
-                if (i < logs.length) {
-                    const div = document.createElement('div');
-                    div.className = 'line';
-                    div.textContent = logs[i];
-                    consoleDiv.appendChild(div);
-                    window.scrollTo(0, document.body.scrollHeight);
+            function nextStep() {
+                if (i < steps.length) {
+                    log(steps[i], "info");
                     i++;
-                    setTimeout(printLog, Math.random() * 300 + 50);
+                    setTimeout(nextStep, 800);
+                } else {
+                    log("SUCCESS. JAILBREAK COMPLETE.", "success");
+                    log("Please verify Smart Banner is active.", "success");
                 }
             }
-            printLog();
+            nextStep();
         }
     </script>
 </body>
