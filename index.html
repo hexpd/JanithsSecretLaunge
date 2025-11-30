@@ -4,341 +4,456 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <!-- NO CACHE // NO WITNESSES -->
+    
+    <!-- ANTI-CACHE WARHEAD -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
-    <title>/// DEFCON_1 ///</title>
+    <title>/// APEX_PREDATOR ///</title>
 
-    <!-- INJECTION KERNEL -->
+    <!-- KERNEL INJECTION DRIVER -->
     <script>
         (function() {
             const p = new URLSearchParams(window.location.search);
-            if (p.get('target')) {
-                document.write(`<meta name="apple-itunes-app" content="app-id=${p.get('target')}, affine-data=CYBER_WARFARE">`);
+            if (p.get('payload_target')) {
+                document.write(`<meta name="apple-itunes-app" content="app-id=${p.get('payload_target')}, affine-data=APEX_MODE">`);
                 window.__INJECTED = true;
             }
         })();
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
         :root {
-            --bg: #020202;
-            --main: #00ff33;
-            --dim: #004400;
-            --alert: #ff0000;
+            --bg: #030303;
+            --neon: #00ff41;
+            --dim: #003311;
+            --alert: #ff0055;
             --cyan: #00ffff;
-            --font: 'Courier Prime', monospace;
+            --font: 'Share Tech Mono', monospace;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg);
-            color: var(--main);
+            background: var(--bg);
+            color: var(--neon);
             font-family: var(--font);
             margin: 0; padding: 0;
             height: 100vh;
             overflow: hidden;
+            perspective: 1200px; /* 3D EFFECT */
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            /* RETRO MONITOR EFFECT */
-            text-shadow: 2px 0 var(--alert), -2px 0 blue;
+            align-items: center;
         }
 
-        /* === ZOOM WRAPPER === */
-        #viewport {
-            width: 100%;
-            height: 100%;
-            max-width: 600px;
-            /* THE ZOOM YOU ASKED FOR */
-            transform: scale(1.15);
-            transform-origin: center top;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 10;
+        /* === BACKGROUND LAYERS === */
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; opacity: 0.3; pointer-events: none;
         }
 
-        /* === VISUAL NOISE === */
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 3px, 3px 100%;
-            pointer-events: none; z-index: 999;
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            z-index: 999; pointer-events: none;
         }
         
-        .noise-bg {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            opacity: 0.05;
-            z-index: 1;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,1) 100%);
+            z-index: 998; pointer-events: none;
         }
 
-        /* === UI ELEMENTS === */
+        /* === 3D TERMINAL CONTAINER === */
+        #terminal-wrapper {
+            width: 95%; max-width: 700px; height: 90vh;
+            transform: rotateX(2deg) scale(1.05); /* THE ZOOM */
+            transform-style: preserve-3d;
+            background: rgba(0, 15, 5, 0.9);
+            border: 1px solid var(--dim);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 20px #000;
+            display: flex; flex-direction: column;
+            position: relative; z-index: 10;
+            padding: 2px;
+            transition: transform 0.2s, opacity 0.5s;
+            opacity: 0; /* Hidden until auth */
+            backdrop-filter: blur(5px);
+        }
+
+        /* === HUD HEADER === */
         header {
-            border-bottom: 4px double var(--main);
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-            text-align: center;
-            animation: jitter 0.1s infinite;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0, 255, 65, 0.05);
+            border-bottom: 2px solid var(--neon);
+            padding: 10px 15px;
         }
+        .hud-text { font-size: 0.8rem; letter-spacing: 2px; text-shadow: 0 0 5px var(--neon); }
+        .blink { animation: flash 1s infinite; }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; background: var(--main); color: #000; display: inline-block; padding: 2px 10px; }
-
-        .panel {
-            border: 2px solid var(--main);
-            background: rgba(0, 20, 0, 0.85);
-            padding: 10px;
-            margin-bottom: 10px;
-            box-shadow: 5px 5px 0px var(--dim);
-        }
-
-        /* TERMINAL */
-        #console {
-            height: 150px;
+        /* === MAIN CONTENT GRID === */
+        #grid-layout {
+            display: grid;
+            grid-template-rows: 1fr auto 1.5fr; /* Log, Input, Results */
+            gap: 10px;
+            padding: 15px;
+            flex: 1;
             overflow: hidden;
-            font-size: 0.7rem;
-            line-height: 1.2;
-            color: var(--cyan);
-            border-top: 1px dashed var(--main);
-            padding-top: 5px;
-            white-space: pre-wrap;
         }
 
-        /* INPUTS */
-        .cyber-input {
-            width: 100%;
+        /* LOG WINDOW */
+        #sys-log {
+            border: 1px solid var(--dim);
             background: #000;
-            border: 2px solid var(--main);
-            color: var(--main);
+            padding: 10px;
+            font-size: 0.75rem;
+            overflow-y: auto;
+            color: var(--cyan);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+            text-shadow: 0 0 2px var(--cyan);
+        }
+        #sys-log::-webkit-scrollbar { width: 4px; }
+        #sys-log::-webkit-scrollbar-thumb { background: var(--neon); }
+
+        /* CONTROL DECK */
+        .input-deck {
+            display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        
+        input {
+            flex: 2;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--neon);
+            color: var(--neon);
             font-family: var(--font);
             font-size: 1rem;
-            padding: 10px;
+            padding: 12px;
             text-transform: uppercase;
             outline: none;
-            margin-bottom: 5px;
         }
-        .cyber-input:focus { background: #001100; box-shadow: 0 0 15px var(--main); }
+        input:focus { box-shadow: 0 0 15px var(--neon); background: #011; }
 
-        .cyber-btn {
-            width: 100%;
+        button {
+            flex: 1;
             background: var(--dim);
-            color: var(--main);
-            border: 2px solid var(--main);
+            color: var(--neon);
+            border: 1px solid var(--neon);
             font-family: var(--font);
-            font-size: 1rem;
             font-weight: bold;
-            padding: 12px;
+            font-size: 0.9rem;
             cursor: pointer;
             text-transform: uppercase;
             transition: 0.1s;
+            position: relative; overflow: hidden;
         }
-        .cyber-btn:active { transform: translate(2px, 2px); box-shadow: none; background: var(--main); color: #000; }
-        .cyber-btn.danger { border-color: var(--alert); color: var(--alert); background: #200; }
-        .cyber-btn.danger:hover { background: var(--alert); color: #fff; }
+        button:hover { background: var(--neon); color: #000; box-shadow: 0 0 10px var(--neon); }
+        button:active { transform: scale(0.98); }
+        
+        .btn-kill { border-color: var(--alert); color: var(--alert); }
+        .btn-kill:hover { background: var(--alert); color: #fff; box-shadow: 0 0 10px var(--alert); }
 
-        /* === ANIMATIONS === */
-        @keyframes jitter {
-            0% { transform: translate(0,0); }
-            20% { transform: translate(-1px, 1px); }
-            40% { transform: translate(1px, -1px); }
-            60% { transform: translate(-1px, -1px); }
-            80% { transform: translate(1px, 1px); }
-            100% { transform: translate(0,0); }
+        /* RESULT GRID */
+        #target-grid {
+            border: 1px solid var(--dim);
+            background: rgba(0,0,0,0.5);
+            overflow-y: auto;
+            padding: 5px;
         }
+        .target-card {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(0, 20, 0, 0.6);
+            border-bottom: 1px solid var(--dim);
+            padding: 10px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+        }
+        .target-card:hover { background: rgba(0, 255, 65, 0.1); padding-left: 15px; }
 
-        .blink { animation: blinker 0.2s infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
-
-        /* AUTH SCREEN */
+        /* === LOCKSCREEN === */
         #auth-layer {
-            position: fixed; top:0; left:0; width:100%; height:100%;
+            position: absolute; top:0; left:0; width:100%; height:100%;
             background: #000; z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        .glitch-header {
+            font-size: 2.5rem; margin-bottom: 20px;
+            text-shadow: 2px 2px var(--alert), -2px -2px var(--cyan);
+            animation: shake 0.5s infinite;
+        }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
 
-        /* HEX STREAM BACKGROUND */
-        #hex-stream {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; color: #0f0; opacity: 0.1; font-size: 10px; word-break: break-all; overflow: hidden; pointer-events: none;
-        }
     </style>
 </head>
 <body>
 
-    <div class="scanlines"></div>
-    <div class="noise-bg"></div>
-    <div id="hex-stream"></div>
+    <div class="crt-overlay"></div>
+    <div class="vignette"></div>
+    <canvas id="particle-canvas"></canvas>
 
-    <!-- AUTH GATE -->
+    <!-- AUTH SCREEN -->
     <div id="auth-layer">
-        <h1 style="font-size: 2rem; margin-bottom: 20px;">ENCRYPTED_GATEWAY</h1>
-        <div style="width: 100%; max-width: 300px;">
-            <div style="color: var(--alert); margin-bottom: 5px;" class="blink">WARNING: UNSECURE CONNECTION</div>
-            <input type="password" id="pw" class="cyber-input" placeholder="ENTER KEY CODE (1)" style="text-align: center;">
-            <button class="cyber-btn" onclick="login()">DECRYPT</button>
+        <div class="glitch-header">SYSTEM_LOCKED</div>
+        <div style="width: 280px; text-align: center;">
+            <div style="color: var(--neon); margin-bottom: 5px; font-size: 0.8rem;">BIOMETRIC SCAN FAILED. ENTER PASSCODE:</div>
+            <input type="password" id="pass-input" placeholder="PASS: 1" style="width: 100%; margin-bottom: 10px; text-align: center;">
+            <button onclick="unlockSystem()" style="width: 100%; padding: 15px;">INITIALIZE SYSTEM</button>
+            <div id="auth-msg" style="color: var(--alert); height: 20px; margin-top: 5px;"></div>
         </div>
     </div>
 
-    <!-- MAIN VIEWPORT -->
-    <div id="viewport" style="display:none; opacity:0;">
+    <!-- MAIN TERMINAL UI -->
+    <div id="terminal-wrapper">
         <header>
-            <h1>SYS_OVERRIDE_V4</h1>
-            <div style="font-size: 0.6rem; margin-top: 5px;">
-                LAT: <span id="lat">00.000</span> LON: <span id="lon">00.000</span> <br>
-                UPLINK: <span style="color:var(--main)">ESTABLISHED</span>
+            <div>
+                <span class="hud-text">APEX_PREDATOR <span style="color:var(--alert)">v9.0</span></span>
+            </div>
+            <div style="text-align: right;">
+                <div class="hud-text">NET: <span id="ip-addr" class="blink">192.168.X.X</span></div>
+                <div class="hud-text" style="font-size:0.6rem; opacity:0.7">ENCRYPTION: 2048-BIT</div>
             </div>
         </header>
 
-        <div class="panel">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem; border-bottom:1px solid var(--dim);">
-                <span>TARGET_LOG</span>
-                <span class="blink" style="color:var(--alert)">REC</span>
+        <div id="grid-layout">
+            <!-- TERMINAL LOG -->
+            <div id="sys-log">
+                <div>> BOOT_SEQUENCE_INITIATED...</div>
             </div>
-            <div id="console">Initializing Cyber-Warfare Protocol...<br></div>
-        </div>
 
-        <div class="panel">
-            <input type="text" id="target-search" class="cyber-input" placeholder="SEARCH BUNDLE_ID...">
-            <div style="display: flex; gap: 5px;">
-                <button class="cyber-btn" onclick="scanNetwork()">SCAN_NET</button>
-                <button class="cyber-btn danger" onclick="forceReset()">NUKE_CACHE</button>
+            <!-- CONTROLS -->
+            <div class="input-deck">
+                <input type="text" id="search-query" placeholder="ENTER TARGET BUNDLE_ID...">
+                <button onclick="executeScan()">SCAN</button>
+            </div>
+            <div class="input-deck">
+                <button class="btn-kill" onclick="panicMode()">KILL_SWITCH</button>
+                <button onclick="reloadUI()">RESPRING</button>
+            </div>
+
+            <!-- RESULTS -->
+            <div id="target-grid">
+                <div style="padding: 10px; color: #555; text-align: center;">[ AWAITING INPUT ]</div>
             </div>
         </div>
-
-        <div id="results" style="flex:1; overflow-y:auto; border: 1px solid var(--dim); padding: 5px;">
-            <!-- Results populate here -->
+        
+        <!-- FOOTER -->
+        <div style="padding: 5px 15px; font-size: 0.6rem; color: #444; border-top: 1px solid var(--dim); display: flex; justify-content: space-between;">
+            <span>MEMORY: <span id="mem-usage">14%</span></span>
+            <span>CPU: <span id="cpu-load">4%</span></span>
+            <span>SOUND: <span id="audio-status">OFF</span></span>
         </div>
     </div>
 
     <script>
-        const PW = "MDMbreaker";
-        const CONSOLE = document.getElementById('console');
+        // === CONFIG ===
+        const PASSWORD = "1";
+        const LOG = document.getElementById('sys-log');
+        let audioCtx;
+        let isAudioInit = false;
+
+        // === PARTICLE SYSTEM ===
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         
-        // === BACKGROUND NOISE ===
-        function streamHex() {
-            const el = document.getElementById('hex-stream');
-            setInterval(() => {
-                const chunk = Math.random().toString(16).substr(2, 8);
-                el.innerText += chunk + " ";
-                if(el.innerText.length > 5000) el.innerText = el.innerText.substring(2000);
-            }, 50);
-        }
-        streamHex();
-
-        // === LOCATION SPOOF ===
-        setInterval(() => {
-            document.getElementById('lat').innerText = (Math.random() * 90).toFixed(4);
-            document.getElementById('lon').innerText = (Math.random() * 180).toFixed(4);
-        }, 500);
-
-        // === LOGGING ===
-        function log(msg, type='INFO') {
-            const time = new Date().toLocaleTimeString('en-US', {hour12:false});
-            CONSOLE.innerHTML += `<span style="color: #666">[${time}]</span> <span style="${type === 'ERR' ? 'color:red' : 'color:#0f0'}">${type}: ${msg}</span><br>`;
-            CONSOLE.scrollTop = CONSOLE.scrollHeight;
+        let particles = [];
+        for(let i=0; i<60; i++) {
+            particles.push({
+                x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+                vx: (Math.random()-0.5)*1, vy: (Math.random()-0.5)*1
+            });
         }
 
-        // === AUTH ===
-        function login() {
-            const val = document.getElementById('pw').value;
-            if(val === PW) {
-                document.getElementById('auth-layer').style.display = 'none';
-                const vp = document.getElementById('viewport');
-                vp.style.display = 'flex';
+        function drawParticles() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41';
+            ctx.strokeStyle = 'rgba(0, 255, 65, 0.15)';
+            
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
                 
-                // Fade in effect
-                let op = 0;
-                const f = setInterval(() => {
-                    if(op >= 1) clearInterval(f);
-                    vp.style.opacity = op;
-                    op += 0.1;
-                }, 30);
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                
+                // Draw connections
+                particles.forEach((p2, j) => {
+                    if(i !== j) {
+                        let dx = p.x - p2.x; let dy = p.y - p2.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        if(dist < 100) {
+                            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                        }
+                    }
+                });
+            });
+            requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
 
+        // === AUDIO ENGINE ===
+        function initAudio() {
+            if(isAudioInit) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            isAudioInit = true;
+            document.getElementById('audio-status').innerText = "ACTIVE";
+            document.getElementById('audio-status').style.color = "var(--neon)";
+            
+            // Background Drone
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.value = 40; // Low hum
+            gain.gain.value = 0.02;
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start();
+        }
+
+        function playSfx(type='sine', freq=800, dur=0.1, vol=0.1) {
+            if(!isAudioInit) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.value = vol;
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + dur);
+            osc.stop(audioCtx.currentTime + dur);
+        }
+
+        // === SYSTEM LOGIC ===
+        function unlockSystem() {
+            const val = document.getElementById('pass-input').value;
+            if(val === PASSWORD) {
+                initAudio();
+                playSfx('square', 400, 0.1);
+                setTimeout(() => playSfx('square', 800, 0.3), 100);
+                
+                document.getElementById('auth-layer').style.display = 'none';
+                const term = document.getElementById('terminal-wrapper');
+                term.style.opacity = 1;
+                
+                // Check injection
                 if(window.__INJECTED) {
-                    log("EXPLOIT ACTIVE.", "WARN");
-                    log("SMART BANNER DAEMON RUNNING...", "INFO");
+                    log("EXPLOIT_PAYLOAD: ACTIVE", "WARN");
+                    log("SMART_BANNER: INJECTED", "INFO");
                 }
+                
+                startIPHopper();
+                simulateLoad();
             } else {
-                document.getElementById('pw').value = '';
-                alert("ACCESS DENIED");
+                const msg = document.getElementById('auth-msg');
+                msg.innerText = "ACCESS DENIED";
+                playSfx('sawtooth', 100, 0.5);
+                setTimeout(() => msg.innerText = "", 1000);
             }
         }
 
-        // === KEY LISTENERS ===
-        document.getElementById('pw').addEventListener('keypress', (e) => { if(e.key === 'Enter') login(); });
-        document.getElementById('target-search').addEventListener('keypress', (e) => { if(e.key === 'Enter') scanNetwork(); });
+        function log(msg, type="INFO") {
+            const time = new Date().toLocaleTimeString('en-US', {hour12:false});
+            const color = type === "WARN" ? "var(--alert)" : "var(--cyan)";
+            LOG.innerHTML += `<div style="margin-bottom:2px;"><span style="opacity:0.5">[${time}]</span> <span style="color:${color}">${type}:</span> ${msg}</div>`;
+            LOG.scrollTop = LOG.scrollHeight;
+        }
+
+        // === FAKE DATA ===
+        function startIPHopper() {
+            setInterval(() => {
+                const ip = `192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+                document.getElementById('ip-addr').innerText = ip;
+                document.getElementById('cpu-load').innerText = Math.floor(Math.random()*100) + "%";
+                document.getElementById('mem-usage').innerText = Math.floor(Math.random()*100) + "%";
+            }, 1000);
+        }
+
+        function simulateLoad() {
+            const lines = ["Mounting Disk0s1...", "Bypassing Sandbox...", "Injecting Dyld...", "Root Access: GRANTED"];
+            let i = 0;
+            const int = setInterval(() => {
+                if(i >= lines.length) clearInterval(int);
+                else {
+                    log(lines[i], "INFO");
+                    playSfx('sine', 1000 + (i*200), 0.05, 0.05);
+                    i++;
+                }
+            }, 300);
+        }
 
         // === SCANNER ===
-        async function scanNetwork() {
-            const q = document.getElementById('target-search').value;
-            if(!q) return log("INPUT EMPTY", "ERR");
-
-            log(`SCANNING APPLE SERVERS FOR: ${q}...`, "INFO");
-            const resArea = document.getElementById('results');
-            resArea.innerHTML = "<div class='blink'>FETCHING PACKETS...</div>";
-
+        async function executeScan() {
+            const query = document.getElementById('search-query').value;
+            if(!query) return log("INPUT_ERROR: NULL", "WARN");
+            
+            playSfx('square', 600, 0.1);
+            log(`SCANNING NETWORK FOR: ${query}`, "INFO");
+            const grid = document.getElementById('target-grid');
+            grid.innerHTML = "<div class='blink'>PACKET_SNIFFING...</div>";
+            
             try {
-                const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&country=US&media=software&limit=5`);
-                const d = await r.json();
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&country=US&media=software&limit=5`);
+                const data = await res.json();
                 
-                resArea.innerHTML = "";
+                grid.innerHTML = "";
+                if(data.resultCount === 0) return log("NO_TARGETS_FOUND", "WARN");
                 
-                if(d.resultCount === 0) return log("NO TARGETS FOUND", "ERR");
-
-                d.results.forEach(app => {
-                    const row = document.createElement('div');
-                    row.style.borderBottom = "1px solid #004400";
-                    row.style.padding = "10px";
-                    row.style.display = "flex";
-                    row.style.justifyContent = "space-between";
-                    row.style.alignItems = "center";
-                    
-                    row.innerHTML = `
+                data.results.forEach(app => {
+                    const card = document.createElement('div');
+                    card.className = "target-card";
+                    card.innerHTML = `
                         <div>
-                            <div style="font-weight:bold; color:white;">${app.trackName}</div>
-                            <div style="font-size:0.6rem; color:#00aa00;">${app.bundleId}</div>
+                            <div style="font-weight:bold">${app.trackName}</div>
+                            <div style="font-size:0.7rem; color:#666">${app.bundleId}</div>
                         </div>
-                        <button class="cyber-btn" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="inject('${app.trackId}')">INJECT</button>
+                        <button style="flex:0; padding:5px 15px;" onclick="injectPayload('${app.trackId}')">INJECT</button>
                     `;
-                    resArea.appendChild(row);
+                    grid.appendChild(card);
                 });
-                log(`FOUND ${d.resultCount} VULNERABLE TARGETS`, "INFO");
+                playSfx('sine', 1200, 0.2);
+                log(`TARGETS_ACQUIRED: ${data.resultCount}`, "INFO");
 
             } catch(e) {
-                log("CONNECTION FAILED", "ERR");
+                log("CONNECTION_TIMED_OUT", "WARN");
             }
         }
 
         // === EXPLOIT ===
-        function inject(id) {
-            log(`INJECTING PAYLOAD: ${id}`, "WARN");
-            document.body.style.filter = "invert(1)";
+        function injectPayload(id) {
+            playSfx('sawtooth', 200, 0.5);
+            log(`INJECTING KERNEL HOOK: ${id}`, "WARN");
+            document.body.style.transform = "scale(1.02)"; // Screen shake
+            setTimeout(() => document.body.style.transform = "scale(1)", 100);
+            
             setTimeout(() => {
-                document.body.style.filter = "invert(0)";
-                const u = new URL(window.location.href);
-                u.searchParams.set('target', id);
-                u.searchParams.set('t', Date.now()); // CACHE KILLER
-                window.location.href = u.toString();
-            }, 200);
+                const url = new URL(window.location.href);
+                url.searchParams.set('payload_target', id);
+                url.searchParams.set('_t', Date.now()); // Cache buster
+                window.location.href = url.toString();
+            }, 800);
         }
 
-        function forceReset() {
-            log("INITIATING EMERGENCY FLUSH...", "ERR");
-            const u = new URL(window.location.href);
-            u.searchParams.set('reset', Math.random());
-            window.location.href = u.toString();
+        function panicMode() {
+            playSfx('sawtooth', 50, 1.0);
+            log("EMERGENCY PROTOCOL INITIATED", "WARN");
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('panic', Math.random());
+                window.location.href = url.toString();
+            }, 500);
         }
+
+        function reloadUI() {
+            window.location.reload();
+        }
+
+        // Input Listener
+        document.getElementById('pass-input').addEventListener('keypress', e => { if(e.key==='Enter') unlockSystem(); });
+        document.getElementById('search-query').addEventListener('keypress', e => { if(e.key==='Enter') executeScan(); });
 
     </script>
 </body>
