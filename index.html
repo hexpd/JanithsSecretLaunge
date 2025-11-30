@@ -4,457 +4,322 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    
-    <!-- ANTI-CACHE WARHEAD -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <title>/// APEX_PREDATOR ///</title>
-
-    <!-- KERNEL INJECTION DRIVER -->
+    <!-- === KERNEL EXPLOIT VECTOR === -->
     <script>
         (function() {
-            const p = new URLSearchParams(window.location.search);
-            if (p.get('payload_target')) {
-                document.write(`<meta name="apple-itunes-app" content="app-id=${p.get('payload_target')}, affine-data=APEX_MODE">`);
-                window.__INJECTED = true;
+            // Check for payload in URL
+            const url = new URL(window.location.href);
+            const target = url.searchParams.get('pwn_id');
+            const nonce = url.searchParams.get('nonce');
+
+            if (target) {
+                // INJECT THE BANNER
+                document.write(`<meta name="apple-itunes-app" content="app-id=${target}, affine-data=JAILBREAK_SUCCESS">`);
+                window.__JB_STATE = "JAILBROKEN";
             }
         })();
     </script>
 
+    <!-- NO CACHE HEADERS -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>checkm8 // exploit</title>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&display=swap');
 
         :root {
-            --bg: #030303;
-            --neon: #00ff41;
-            --dim: #003311;
-            --alert: #ff0055;
-            --cyan: #00ffff;
-            --font: 'Share Tech Mono', monospace;
+            --bg: #000000;
+            --text: #e0e0e0;
+            --dim: #666;
+            --accent: #444; /* Dark grey like checkra1n */
+            --highlight: #ffffff;
+            --font: 'Fira Code', monospace;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: var(--bg);
-            color: var(--neon);
+            background-color: var(--bg);
+            color: var(--text);
             font-family: var(--font);
             margin: 0; padding: 0;
             height: 100vh;
             overflow: hidden;
-            perspective: 1200px; /* 3D EFFECT */
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+            font-size: 11px;
+            line-height: 1.4;
         }
 
-        /* === BACKGROUND LAYERS === */
-        #particle-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; opacity: 0.3; pointer-events: none;
-        }
-
-        .crt-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
-            z-index: 999; pointer-events: none;
-        }
-        
-        .vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,1) 100%);
-            z-index: 998; pointer-events: none;
-        }
-
-        /* === 3D TERMINAL CONTAINER === */
-        #terminal-wrapper {
-            width: 95%; max-width: 700px; height: 90vh;
-            transform: rotateX(2deg) scale(1.05); /* THE ZOOM */
-            transform-style: preserve-3d;
-            background: rgba(0, 15, 5, 0.9);
-            border: 1px solid var(--dim);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 20px #000;
-            display: flex; flex-direction: column;
-            position: relative; z-index: 10;
-            padding: 2px;
-            transition: transform 0.2s, opacity 0.5s;
-            opacity: 0; /* Hidden until auth */
-            backdrop-filter: blur(5px);
-        }
-
-        /* === HUD HEADER === */
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0, 255, 65, 0.05);
-            border-bottom: 2px solid var(--neon);
-            padding: 10px 15px;
-        }
-        .hud-text { font-size: 0.8rem; letter-spacing: 2px; text-shadow: 0 0 5px var(--neon); }
-        .blink { animation: flash 1s infinite; }
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* === MAIN CONTENT GRID === */
-        #grid-layout {
-            display: grid;
-            grid-template-rows: 1fr auto 1.5fr; /* Log, Input, Results */
-            gap: 10px;
+        /* === UI LAYOUT === */
+        #main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ASCII HEADER */
+        .ascii-art {
+            white-space: pre;
+            font-size: 8px;
+            line-height: 8px;
+            color: var(--dim);
+            margin-bottom: 20px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        /* TERMINAL WINDOW */
+        #console-window {
             flex: 1;
-            overflow: hidden;
-        }
-
-        /* LOG WINDOW */
-        #sys-log {
-            border: 1px solid var(--dim);
-            background: #000;
+            background: #0a0a0a;
+            border: 1px solid #333;
             padding: 10px;
-            font-size: 0.75rem;
-            overflow-y: auto;
-            color: var(--cyan);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
-            text-shadow: 0 0 2px var(--cyan);
+            overflow-y: hidden; /* Auto-scroll handled by JS */
+            margin-bottom: 15px;
+            font-family: var(--font);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Pin to bottom */
         }
-        #sys-log::-webkit-scrollbar { width: 4px; }
-        #sys-log::-webkit-scrollbar-thumb { background: var(--neon); }
 
-        /* CONTROL DECK */
-        .input-deck {
-            display: flex; gap: 10px; flex-wrap: wrap;
+        .log-entry { margin-bottom: 2px; word-break: break-all; }
+        .log-entry.panic { color: #ff3333; }
+        .log-entry.success { color: #33ff33; }
+        .log-entry.info { color: #aaa; }
+
+        /* CONTROLS */
+        .control-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        
+
         input {
-            flex: 2;
-            background: rgba(0,0,0,0.8);
-            border: 1px solid var(--neon);
-            color: var(--neon);
-            font-family: var(--font);
-            font-size: 1rem;
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
             padding: 12px;
-            text-transform: uppercase;
-            outline: none;
-        }
-        input:focus { box-shadow: 0 0 15px var(--neon); background: #011; }
-
-        button {
-            flex: 1;
-            background: var(--dim);
-            color: var(--neon);
-            border: 1px solid var(--neon);
             font-family: var(--font);
-            font-weight: bold;
-            font-size: 0.9rem;
-            cursor: pointer;
+            font-size: 12px;
+            flex: 1;
+            outline: none;
             text-transform: uppercase;
+        }
+        input:focus { border-color: #fff; }
+
+        /* THE BUTTONS */
+        button {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 12px 20px;
+            font-family: var(--font);
+            font-size: 12px;
+            cursor: pointer;
             transition: 0.1s;
-            position: relative; overflow: hidden;
         }
-        button:hover { background: var(--neon); color: #000; box-shadow: 0 0 10px var(--neon); }
-        button:active { transform: scale(0.98); }
+        button:active { background: #555; }
         
-        .btn-kill { border-color: var(--alert); color: var(--alert); }
-        .btn-kill:hover { background: var(--alert); color: #fff; box-shadow: 0 0 10px var(--alert); }
+        .btn-pwn {
+            background: #e0e0e0;
+            color: #000;
+            font-weight: bold;
+            border: none;
+        }
+        .btn-pwn:active { background: #aaa; }
 
-        /* RESULT GRID */
-        #target-grid {
-            border: 1px solid var(--dim);
-            background: rgba(0,0,0,0.5);
+        /* THE X BUTTON (EXIT RECOVERY) */
+        .btn-exit {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #666;
+            width: 30px; 
+            height: 30px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-exit:hover { border-color: red; color: red; }
+
+        /* PROGRESS BAR */
+        #progress-container {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin-bottom: 15px;
+            display: none;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #fff;
+            transition: width 0.2s;
+        }
+
+        /* APP LIST */
+        #app-drawer {
+            max-height: 120px;
             overflow-y: auto;
-            padding: 5px;
+            border-top: 1px solid #333;
+            margin-top: 10px;
+            display: none;
         }
-        .target-card {
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0, 20, 0, 0.6);
-            border-bottom: 1px solid var(--dim);
-            padding: 10px;
-            margin-bottom: 5px;
-            transition: 0.2s;
+        .app-row {
+            padding: 8px;
+            border-bottom: 1px solid #222;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer;
         }
-        .target-card:hover { background: rgba(0, 255, 65, 0.1); padding-left: 15px; }
-
-        /* === LOCKSCREEN === */
-        #auth-layer {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: #000; z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .glitch-header {
-            font-size: 2.5rem; margin-bottom: 20px;
-            text-shadow: 2px 2px var(--alert), -2px -2px var(--cyan);
-            animation: shake 0.5s infinite;
-        }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
+        .app-row:hover { background: #111; }
 
     </style>
 </head>
 <body>
 
-    <div class="crt-overlay"></div>
-    <div class="vignette"></div>
-    <canvas id="particle-canvas"></canvas>
+    <div id="main-container">
+        <!-- THE "X" BUTTON -->
+        <div class="btn-exit" onclick="hardReset()" title="Exit Recovery Mode">X</div>
 
-    <!-- AUTH SCREEN -->
-    <div id="auth-layer">
-        <div class="glitch-header">SYSTEM_LOCKED</div>
-        <div style="width: 280px; text-align: center;">
-            <div style="color: var(--neon); margin-bottom: 5px; font-size: 0.8rem;">BIOMETRIC SCAN FAILED. ENTER PASSCODE:</div>
-            <input type="password" id="pass-input" placeholder="PASS: 1" style="width: 100%; margin-bottom: 10px; text-align: center;">
-            <button onclick="unlockSystem()" style="width: 100%; padding: 15px;">INITIALIZE SYSTEM</button>
-            <div id="auth-msg" style="color: var(--alert); height: 20px; margin-top: 5px;"></div>
+        <div class="ascii-art">
+   _______  _    _  _   _ 
+  |__   __|| |  | || \ | |
+     | |   | |__| ||  \| |
+     | |   |  __  || . ` |
+     | |   | |  | || |\  |
+     |_|   |_|  |_||_| \_|
+     UNTETHERED // v1.0
         </div>
-    </div>
 
-    <!-- MAIN TERMINAL UI -->
-    <div id="terminal-wrapper">
-        <header>
-            <div>
-                <span class="hud-text">APEX_PREDATOR <span style="color:var(--alert)">v9.0</span></span>
-            </div>
-            <div style="text-align: right;">
-                <div class="hud-text">NET: <span id="ip-addr" class="blink">192.168.X.X</span></div>
-                <div class="hud-text" style="font-size:0.6rem; opacity:0.7">ENCRYPTION: 2048-BIT</div>
-            </div>
-        </header>
+        <div id="console-window">
+            <div class="log-entry info">checkm8 initialized.</div>
+            <div class="log-entry info">Waiting for DFU device...</div>
+            <div class="log-entry success">Device connected: iPhone14,3 (Global)</div>
+            <div class="log-entry info">Ready to exploit.</div>
+        </div>
 
-        <div id="grid-layout">
-            <!-- TERMINAL LOG -->
-            <div id="sys-log">
-                <div>> BOOT_SEQUENCE_INITIATED...</div>
-            </div>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
 
-            <!-- CONTROLS -->
-            <div class="input-deck">
-                <input type="text" id="search-query" placeholder="ENTER TARGET BUNDLE_ID...">
-                <button onclick="executeScan()">SCAN</button>
-            </div>
-            <div class="input-deck">
-                <button class="btn-kill" onclick="panicMode()">KILL_SWITCH</button>
-                <button onclick="reloadUI()">RESPRING</button>
-            </div>
-
-            <!-- RESULTS -->
-            <div id="target-grid">
-                <div style="padding: 10px; color: #555; text-align: center;">[ AWAITING INPUT ]</div>
-            </div>
+        <div class="control-group">
+            <input type="text" id="target-search" placeholder="Search Bundle ID (e.g. Minecraft)">
+            <button onclick="searchApps()">SCAN</button>
         </div>
         
-        <!-- FOOTER -->
-        <div style="padding: 5px 15px; font-size: 0.6rem; color: #444; border-top: 1px solid var(--dim); display: flex; justify-content: space-between;">
-            <span>MEMORY: <span id="mem-usage">14%</span></span>
-            <span>CPU: <span id="cpu-load">4%</span></span>
-            <span>SOUND: <span id="audio-status">OFF</span></span>
+        <div id="app-drawer"></div>
+
+        <button class="btn-pwn" id="pwn-btn" style="width:100%; display:none;" onclick="startExploit()">JAILBREAK</button>
+        
+        <div style="margin-top: 10px; color: #444; font-size: 9px; text-align: center;">
+            exploiting with checkm8... please wait<br>
+            do not disconnect cable
         </div>
     </div>
 
     <script>
-        // === CONFIG ===
-        const PASSWORD = "1";
-        const LOG = document.getElementById('sys-log');
-        let audioCtx;
-        let isAudioInit = false;
+        const TERMINAL = document.getElementById('console-window');
+        const BAR = document.getElementById('progress-bar');
+        let selectedAppId = null;
 
-        // === PARTICLE SYSTEM ===
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        
-        let particles = [];
-        for(let i=0; i<60; i++) {
-            particles.push({
-                x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-                vx: (Math.random()-0.5)*1, vy: (Math.random()-0.5)*1
-            });
-        }
-
-        function drawParticles() {
-            ctx.clearRect(0,0,canvas.width, canvas.height);
-            ctx.fillStyle = '#00ff41';
-            ctx.strokeStyle = 'rgba(0, 255, 65, 0.15)';
-            
-            particles.forEach((p, i) => {
-                p.x += p.vx; p.y += p.vy;
-                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                
-                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
-                
-                // Draw connections
-                particles.forEach((p2, j) => {
-                    if(i !== j) {
-                        let dx = p.x - p2.x; let dy = p.y - p2.y;
-                        let dist = Math.sqrt(dx*dx + dy*dy);
-                        if(dist < 100) {
-                            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-                        }
-                    }
-                });
-            });
-            requestAnimationFrame(drawParticles);
-        }
-        drawParticles();
-
-        // === AUDIO ENGINE ===
-        function initAudio() {
-            if(isAudioInit) return;
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-            isAudioInit = true;
-            document.getElementById('audio-status').innerText = "ACTIVE";
-            document.getElementById('audio-status').style.color = "var(--neon)";
-            
-            // Background Drone
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.value = 40; // Low hum
-            gain.gain.value = 0.02;
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start();
-        }
-
-        function playSfx(type='sine', freq=800, dur=0.1, vol=0.1) {
-            if(!isAudioInit) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.value = freq;
-            gain.gain.value = vol;
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + dur);
-            osc.stop(audioCtx.currentTime + dur);
-        }
-
-        // === SYSTEM LOGIC ===
-        function unlockSystem() {
-            const val = document.getElementById('pass-input').value;
-            if(val === PASSWORD) {
-                initAudio();
-                playSfx('square', 400, 0.1);
-                setTimeout(() => playSfx('square', 800, 0.3), 100);
-                
-                document.getElementById('auth-layer').style.display = 'none';
-                const term = document.getElementById('terminal-wrapper');
-                term.style.opacity = 1;
-                
-                // Check injection
-                if(window.__INJECTED) {
-                    log("EXPLOIT_PAYLOAD: ACTIVE", "WARN");
-                    log("SMART_BANNER: INJECTED", "INFO");
-                }
-                
-                startIPHopper();
-                simulateLoad();
-            } else {
-                const msg = document.getElementById('auth-msg');
-                msg.innerText = "ACCESS DENIED";
-                playSfx('sawtooth', 100, 0.5);
-                setTimeout(() => msg.innerText = "", 1000);
+        // === BOOT CHECK ===
+        window.onload = function() {
+            if (window.__JB_STATE === "JAILBROKEN") {
+                log("Exploit chain finished.", "success");
+                log("Remounting / as rw...", "info");
+                log("Respringing...", "info");
+                log("Smart Banner should be visible.", "success");
             }
+        };
+
+        // === LOGGING ===
+        function log(msg, type='info') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerText = `> ${msg}`;
+            TERMINAL.appendChild(div);
+            // Limit logs
+            if (TERMINAL.childElementCount > 15) TERMINAL.removeChild(TERMINAL.firstChild);
+            TERMINAL.scrollTop = TERMINAL.scrollHeight;
         }
 
-        function log(msg, type="INFO") {
-            const time = new Date().toLocaleTimeString('en-US', {hour12:false});
-            const color = type === "WARN" ? "var(--alert)" : "var(--cyan)";
-            LOG.innerHTML += `<div style="margin-bottom:2px;"><span style="opacity:0.5">[${time}]</span> <span style="color:${color}">${type}:</span> ${msg}</div>`;
-            LOG.scrollTop = LOG.scrollHeight;
-        }
+        // === SEARCH ===
+        async function searchApps() {
+            const q = document.getElementById('target-search').value;
+            if (!q) return log("Error: Input empty", "panic");
 
-        // === FAKE DATA ===
-        function startIPHopper() {
-            setInterval(() => {
-                const ip = `192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
-                document.getElementById('ip-addr').innerText = ip;
-                document.getElementById('cpu-load').innerText = Math.floor(Math.random()*100) + "%";
-                document.getElementById('mem-usage').innerText = Math.floor(Math.random()*100) + "%";
-            }, 1000);
-        }
+            log(`Fetching packages for "${q}"...`, "info");
+            document.getElementById('app-drawer').style.display = 'block';
+            document.getElementById('app-drawer').innerHTML = '<div style="padding:10px; color:#666;">Loading repo...</div>';
 
-        function simulateLoad() {
-            const lines = ["Mounting Disk0s1...", "Bypassing Sandbox...", "Injecting Dyld...", "Root Access: GRANTED"];
-            let i = 0;
-            const int = setInterval(() => {
-                if(i >= lines.length) clearInterval(int);
-                else {
-                    log(lines[i], "INFO");
-                    playSfx('sine', 1000 + (i*200), 0.05, 0.05);
-                    i++;
-                }
-            }, 300);
-        }
-
-        // === SCANNER ===
-        async function executeScan() {
-            const query = document.getElementById('search-query').value;
-            if(!query) return log("INPUT_ERROR: NULL", "WARN");
-            
-            playSfx('square', 600, 0.1);
-            log(`SCANNING NETWORK FOR: ${query}`, "INFO");
-            const grid = document.getElementById('target-grid');
-            grid.innerHTML = "<div class='blink'>PACKET_SNIFFING...</div>";
-            
             try {
-                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&country=US&media=software&limit=5`);
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&country=US&media=software&limit=5`);
                 const data = await res.json();
                 
-                grid.innerHTML = "";
-                if(data.resultCount === 0) return log("NO_TARGETS_FOUND", "WARN");
-                
+                const drawer = document.getElementById('app-drawer');
+                drawer.innerHTML = '';
+
+                if (data.resultCount === 0) return log("No packages found.", "panic");
+
                 data.results.forEach(app => {
-                    const card = document.createElement('div');
-                    card.className = "target-card";
-                    card.innerHTML = `
-                        <div>
-                            <div style="font-weight:bold">${app.trackName}</div>
-                            <div style="font-size:0.7rem; color:#666">${app.bundleId}</div>
-                        </div>
-                        <button style="flex:0; padding:5px 15px;" onclick="injectPayload('${app.trackId}')">INJECT</button>
+                    const el = document.createElement('div');
+                    el.className = 'app-row';
+                    el.innerHTML = `
+                        <span>${app.trackName} <span style="color:#555; font-size:9px;">${app.bundleId}</span></span>
                     `;
-                    grid.appendChild(card);
+                    el.onclick = () => selectTarget(app.trackId, app.trackName);
+                    drawer.appendChild(el);
                 });
-                playSfx('sine', 1200, 0.2);
-                log(`TARGETS_ACQUIRED: ${data.resultCount}`, "INFO");
+                log(`Found ${data.resultCount} candidates. Select one.`, "success");
 
             } catch(e) {
-                log("CONNECTION_TIMED_OUT", "WARN");
+                log("Repo connection failed.", "panic");
             }
         }
 
-        // === EXPLOIT ===
-        function injectPayload(id) {
-            playSfx('sawtooth', 200, 0.5);
-            log(`INJECTING KERNEL HOOK: ${id}`, "WARN");
-            document.body.style.transform = "scale(1.02)"; // Screen shake
-            setTimeout(() => document.body.style.transform = "scale(1)", 100);
+        function selectTarget(id, name) {
+            selectedAppId = id;
+            log(`Target selected: ${name}`, "info");
+            log("Ready to pwn.", "success");
             
-            setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('payload_target', id);
-                url.searchParams.set('_t', Date.now()); // Cache buster
-                window.location.href = url.toString();
-            }, 800);
+            // Show the BIG button
+            const btn = document.getElementById('pwn-btn');
+            btn.style.display = 'block';
+            btn.innerText = `JAILBREAK (${name})`;
+            
+            // Hide drawer to clean up UI
+            document.getElementById('app-drawer').style.display = 'none';
         }
 
-        function panicMode() {
-            playSfx('sawtooth', 50, 1.0);
-            log("EMERGENCY PROTOCOL INITIATED", "WARN");
-            setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('panic', Math.random());
-                window.location.href = url.toString();
-            }, 500);
-        }
+        // === THE EXPLOIT CHAIN ===
+        function startExploit() {
+            if (!selectedAppId) return;
 
-        function reloadUI() {
-            window.location.reload();
-        }
-
-        // Input Listener
-        document.getElementById('pass-input').addEventListener('keypress', e => { if(e.key==='Enter') unlockSystem(); });
-        document.getElementById('search-query').addEventListener('keypress', e => { if(e.key==='Enter') executeScan(); });
-
-    </script>
-</body>
-</html>
+            const btn = document.getElementById('pwn-btn');
+            btn.disabled = true;
+            btn.style.opacity = 0.5;
+            
+            document.getElementById('progress-container').style.display = 'block';
+            
+            // Fake verbose boot sequence
+            const sequence = [
+                { msg: "Heap spray...", t: 200, p: 10 },
+                { msg: "Patching kernel tables...", t: 600, p: 30 },
+                { msg: "Bypassing KPP...", t: 1000, p: 45 },
+                { msg: "A
