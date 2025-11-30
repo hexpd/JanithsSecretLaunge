@@ -10,11 +10,9 @@
     <!-- === KERNEL LEVEL INJECTION (MUST BE FIRST) === -->
     <script>
         (function() {
-            // Instant execution to beat the rendering engine
             const p = new URLSearchParams(window.location.search);
             const tid = p.get('targetAppId');
             if (tid) {
-                // The magic line. This triggers the banner.
                 document.write('<meta name="apple-itunes-app" content="app-id=' + tid + ', affiliate-data=checkm8-exploit">');
             }
         })();
@@ -30,7 +28,6 @@
             --err: #ff3333;
             --warn: #ffcc00;
             --font: 'Courier New', Courier, monospace;
-            --scanline: rgba(0, 0, 0, 0.5);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -123,6 +120,8 @@
             flex: 1;
             outline: none;
             text-transform: uppercase;
+            border-radius: 0; /* iOS fix */
+            -webkit-appearance: none; /* iOS fix */
         }
         input:focus { border-color: var(--term-green); box-shadow: 0 0 5px var(--term-dim); }
         input::placeholder { color: var(--term-dim); opacity: 0.5; }
@@ -136,6 +135,8 @@
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
+            border-radius: 0; /* iOS fix */
+            -webkit-appearance: none;
         }
         button:active { background: var(--term-green); }
         
@@ -148,12 +149,12 @@
             padding: 10px;
         }
 
-        /* === APP LIST (CYDIA STYLE) === */
+        /* === APP LIST === */
         #pkg-manager {
             height: 180px;
             border-top: 1px solid var(--term-dim);
             overflow-y: auto;
-            display: none; /* Hidden until search */
+            display: none; 
         }
 
         .pkg-item {
@@ -190,10 +191,18 @@
             justify-content: center;
         }
         
+        /* THIS FORM WRAPPER FIXES THE IPAD ENTER KEY ISSUE */
+        form {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
         .auth-btn {
             width: 100%; 
             margin-top: 10px; 
-            padding: 10px;
+            padding: 15px; /* Bigger touch target */
+            font-size: 14px;
         }
 
         .hidden { display: none !important; }
@@ -204,22 +213,26 @@
 
     <!-- === AUTHENTICATION LAYER === -->
     <div id="auth-overlay">
-        <div style="width: 280px;">
-            <div style="margin-bottom: 5px; font-size: 11px;">secure_enclave@iphone:~$ login</div>
+        <!-- 
+           Wrapping this in a FORM is the secret sauce for iOS Keyboards.
+           onsubmit="return false" stops the page from refreshing.
+        -->
+        <form id="login-form">
+            <div style="margin-bottom: 5px; font-size: 11px; text-align: left;">secure_enclave@iphone:~$ login</div>
             
             <input type="password" id="auth-pass" placeholder="PASSWORD REQUIRED" autofocus autocomplete="off">
             
-            <!-- THE BUTTON YOU REQUESTED -->
-            <button class="auth-btn" onclick="checkPass()">AUTHENTICATE</button>
+            <!-- Type="submit" makes the "Go" button work naturally -->
+            <button type="submit" class="auth-btn">AUTHENTICATE</button>
             
-            <div id="auth-status" style="margin-top: 10px; height: 20px; color: var(--err); font-size: 11px;"></div>
-        </div>
+            <div id="auth-status" style="margin-top: 10px; height: 20px; color: var(--err); font-size: 11px; text-align: center;"></div>
+        </form>
     </div>
 
     <!-- === MAIN INTERFACE === -->
     <div id="main-interface" class="hidden">
         <header>
-            <div class="header-title">checkm8 // v3.1</div>
+            <div class="header-title">checkm8 // v3.2</div>
             <div class="header-status">
                 <span id="usb-status">USB: CONNECTED</span>
             </div>
@@ -245,47 +258,52 @@
 
     <script>
         // === CONFIGURATION ===
-        const PASSWORD = "checkm8"; // Change this if you want
+        const PASSWORD = "checkm8"; 
         const TERM = document.getElementById('console-window');
-        
-        // === STATE CHECK ===
         const urlParams = new URLSearchParams(window.location.search);
         const activeTarget = urlParams.get('targetAppId');
 
-        // === SYSTEM LOGIC ===
         window.onload = function() {
-            // Focus password on load
+            // iOS fix: sometimes autofocus is blocked, but we try anyway
             document.getElementById('auth-pass').focus();
         };
 
-        // 1. AUTHENTICATION LOGIC (Button + Enter Key)
+        // 1. FORM SUBMISSION LOGIC (Fixes iPad "Enter" Key)
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Stop actual form submission
+            checkPass(); // Run our code
+        });
+
         function checkPass() {
             const input = document.getElementById('auth-pass');
             const status = document.getElementById('auth-status');
             
-            if (input.value === PASSWORD) {
+            // Clean up input (trim spaces just in case)
+            if (input.value.trim() === PASSWORD) {
+                // SUCCESS
                 status.style.color = "var(--term-green)";
                 status.innerText = "ACCESS GRANTED. DECRYPTING...";
+                
+                // Hide keyboard on mobile
+                input.blur(); 
+                
                 setTimeout(() => {
                     document.getElementById('auth-overlay').classList.add('hidden');
                     document.getElementById('main-interface').classList.remove('hidden');
                     initTerminal();
                 }, 800);
             } else {
+                // FAIL
                 status.innerText = "ACCESS DENIED: INCORRECT KEY.";
                 input.value = "";
+                // Don't focus immediately on mobile as it can be annoying, 
+                // but for this hacky vibe it's fine.
                 input.focus(); 
             }
         }
 
-        // Trigger on Enter Key
-        document.getElementById('auth-pass').addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') checkPass();
-        });
-
         // 2. VERBOSE TERMINAL BOOT SEQUENCE
         function initTerminal() {
-            // This is the extra verbose stuff you wanted
             const bootLogs = [
                 "Initializing IOKit connection...",
                 "mach_port_allocate: success (0x4103)",
@@ -304,7 +322,6 @@
                 "Exploit chain complete."
             ];
 
-            // If we have a target app, add specific logs for it
             if (activeTarget) {
                 bootLogs.push(`[+] TARGET FOUND IN NVRAM: ${activeTarget}`);
                 bootLogs.push(`[+] INJECTING SMART BANNER META TAG...`);
@@ -316,14 +333,12 @@
             let i = 0;
             function runLog() {
                 if (i < bootLogs.length) {
-                    // Randomize log type for flavor
                     let type = 'sys';
                     if (bootLogs[i].includes('WARN')) type = 'warn';
                     if (bootLogs[i].includes('SUCCESS') || bootLogs[i].includes('complete')) type = 'success';
                     
                     log(bootLogs[i], type);
                     i++;
-                    // Random speed for realistic typing feel
                     setTimeout(runLog, Math.random() * 200 + 50);
                 }
             }
@@ -339,7 +354,7 @@
             TERM.scrollTop = TERM.scrollHeight;
         }
 
-        // 3. REPO SEARCH (iTunes API)
+        // 3. REPO SEARCH
         async function searchRepo() {
             const term = document.getElementById('repo-search').value;
             const container = document.getElementById('pkg-manager');
@@ -369,4 +384,47 @@
                         <img src="${app.artworkUrl60}" class="pkg-icon">
                         <div class="pkg-info">
                             <div class="pkg-name">${app.trackName}</div>
-                            <div cl
+                            <div class="pkg-id">${app.bundleId}</div>
+                        </div>
+                        <div class="pkg-action">[INJECT]</div>
+                    `;
+                    el.onclick = () => inject(app.trackId, app.trackName);
+                    container.appendChild(el);
+                });
+                log(`Package list updated. ${data.resultCount} items found.`, "success");
+
+            } catch (e) {
+                log("Connection timed out.", "error");
+            }
+        }
+
+        // 4. INJECTION
+        function inject(id, name) {
+            log(`Preparing injection for ${name}...`, "sys");
+            log(`Writing bundle ID ${id} to NVRAM...`, "warn");
+            
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.search = `?targetAppId=${id}`;
+                window.location.href = url.toString();
+            }, 1500);
+        }
+
+        // 5. RESPRING
+        function respring() {
+            log("Sending SIGTERM to backboardd...", "error");
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.search = ''; 
+                window.location.href = url.toString();
+            }, 800);
+        }
+
+        // Search bar Enter Key
+        document.getElementById('repo-search').addEventListener('keyup', (e) => {
+            if(e.key === 'Enter') searchRepo();
+        });
+
+    </script>
+</body>
+</html>
