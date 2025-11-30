@@ -7,444 +7,337 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- NUCLEAR CACHE DESTRUCTION -->
+    <!-- NO CACHE // NO WITNESSES -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
-    <title>/// SYSTEM_OVERRIDE ///</title>
+    <title>/// DEFCON_1 ///</title>
 
-    <!-- PAYLOAD INJECTION KERNEL -->
+    <!-- INJECTION KERNEL -->
     <script>
         (function() {
             const p = new URLSearchParams(window.location.search);
-            if (p.get('x_id')) {
-                document.write(`<meta name="apple-itunes-app" content="app-id=${p.get('x_id')}, affine-data=GOD_MODE">`);
-                window.__PAYLOAD_ACTIVE = true;
+            if (p.get('target')) {
+                document.write(`<meta name="apple-itunes-app" content="app-id=${p.get('target')}, affine-data=CYBER_WARFARE">`);
+                window.__INJECTED = true;
             }
         })();
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=swap');
 
         :root {
-            --bg: #000;
-            --p-color: #0f0; /* Phosphorus Green */
-            --s-color: #030; /* Dim Green */
-            --alert: #f00;
-            --font: 'VT323', monospace;
+            --bg: #020202;
+            --main: #00ff33;
+            --dim: #004400;
+            --alert: #ff0000;
+            --cyan: #00ffff;
+            --font: 'Courier Prime', monospace;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
+
         body {
-            background: var(--bg);
-            color: var(--p-color);
+            background-color: var(--bg);
+            color: var(--main);
             font-family: var(--font);
             margin: 0; padding: 0;
             height: 100vh;
             overflow: hidden;
-            font-size: 18px;
-            text-transform: uppercase;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            /* RETRO MONITOR EFFECT */
+            text-shadow: 2px 0 var(--alert), -2px 0 blue;
         }
 
-        /* === VISUAL LAYERS === */
-        #matrix-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.15; z-index: 1; pointer-events: none;
+        /* === ZOOM WRAPPER === */
+        #viewport {
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            /* THE ZOOM YOU ASKED FOR */
+            transform: scale(1.15);
+            transform-origin: center top;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
         }
 
-        #crt-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
-            z-index: 999; pointer-events: none;
+        /* === VISUAL NOISE === */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none; z-index: 999;
         }
         
-        #vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.9) 100%);
-            z-index: 998; pointer-events: none;
+        .noise-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            opacity: 0.05;
+            z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
-        /* === UI CONTAINERS === */
-        #boot-sequence {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: #000; z-index: 50; padding: 20px;
-            display: flex; flex-direction: column; justify-content: flex-end;
+        /* === UI ELEMENTS === */
+        header {
+            border-bottom: 4px double var(--main);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+            animation: jitter 0.1s infinite;
         }
 
-        #main-ui {
-            position: relative; z-index: 10;
-            display: flex; flex-direction: column;
-            height: 100%; padding: 10px;
-            opacity: 0; /* Hidden until boot */
-            transition: opacity 0.2s;
-        }
+        h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; background: var(--main); color: #000; display: inline-block; padding: 2px 10px; }
 
-        /* === MODULES === */
-        .module {
-            border: 1px solid var(--s-color);
-            background: rgba(0, 10, 0, 0.8);
-            margin-bottom: 8px;
-            padding: 8px;
-            position: relative;
-        }
-        .module-header {
-            position: absolute; top: -10px; left: 10px;
-            background: #000; padding: 0 5px; color: var(--s-color);
-            font-size: 0.8rem; border: 1px solid var(--s-color);
-        }
-
-        /* TOP BAR */
-        .status-bar {
-            display: flex; justify-content: space-between;
-            border-bottom: 2px solid var(--p-color);
-            margin-bottom: 15px; padding-bottom: 5px;
-        }
-        .blink-red { animation: blink-r 0.5s infinite; color: var(--alert); }
-        @keyframes blink-r { 50% { opacity: 0; } }
-
-        /* HEX DUMP */
-        #hex-view {
-            font-size: 0.7rem; color: var(--s-color);
-            height: 60px; overflow: hidden; white-space: pre-wrap;
-            word-break: break-all; opacity: 0.7;
+        .panel {
+            border: 2px solid var(--main);
+            background: rgba(0, 20, 0, 0.85);
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 5px 5px 0px var(--dim);
         }
 
         /* TERMINAL */
         #console {
-            flex: 1; overflow-y: auto;
-            border: 1px solid var(--p-color);
-            padding: 10px; font-size: 0.9rem;
-            box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.2);
+            height: 150px;
+            overflow: hidden;
+            font-size: 0.7rem;
+            line-height: 1.2;
+            color: var(--cyan);
+            border-top: 1px dashed var(--main);
+            padding-top: 5px;
+            white-space: pre-wrap;
         }
-        .msg { margin-bottom: 2px; }
-        .msg.err { color: var(--alert); text-shadow: 0 0 5px red; }
-        .msg.sys { color: #fff; }
 
-        /* CONTROLS */
-        .control-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+        /* INPUTS */
+        .cyber-input {
+            width: 100%;
+            background: #000;
+            border: 2px solid var(--main);
+            color: var(--main);
+            font-family: var(--font);
+            font-size: 1rem;
+            padding: 10px;
+            text-transform: uppercase;
+            outline: none;
+            margin-bottom: 5px;
         }
-        input {
-            grid-column: span 2;
-            background: #000; border: 1px solid var(--p-color);
-            color: var(--p-color); font-family: var(--font);
-            font-size: 1.2rem; padding: 10px; outline: none;
-        }
-        input:focus { background: #050; box-shadow: 0 0 10px var(--p-color); }
-        
-        button {
-            background: #000; color: var(--p-color);
-            border: 1px solid var(--p-color);
-            font-family: var(--font); font-size: 1.1rem;
-            cursor: pointer; padding: 10px;
+        .cyber-input:focus { background: #001100; box-shadow: 0 0 15px var(--main); }
+
+        .cyber-btn {
+            width: 100%;
+            background: var(--dim);
+            color: var(--main);
+            border: 2px solid var(--main);
+            font-family: var(--font);
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
             transition: 0.1s;
         }
-        button:active { background: var(--p-color); color: #000; }
-        button.danger { border-color: var(--alert); color: var(--alert); }
-        button.danger:hover { background: var(--alert); color: #000; }
+        .cyber-btn:active { transform: translate(2px, 2px); box-shadow: none; background: var(--main); color: #000; }
+        .cyber-btn.danger { border-color: var(--alert); color: var(--alert); background: #200; }
+        .cyber-btn.danger:hover { background: var(--alert); color: #fff; }
 
-        /* === GLITCH EFFECTS === */
-        .glitch-text {
-            position: relative;
+        /* === ANIMATIONS === */
+        @keyframes jitter {
+            0% { transform: translate(0,0); }
+            20% { transform: translate(-1px, 1px); }
+            40% { transform: translate(1px, -1px); }
+            60% { transform: translate(-1px, -1px); }
+            80% { transform: translate(1px, 1px); }
+            100% { transform: translate(0,0); }
         }
-        .glitch-text::before, .glitch-text::after {
-            content: attr(data-text);
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+        .blink { animation: blinker 0.2s infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        /* AUTH SCREEN */
+        #auth-layer {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #000; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px;
         }
-        .glitch-text::before {
-            left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0);
-            animation: glitch-anim-2 3s infinite linear alternate-reverse;
-        }
-        .glitch-text::after {
-            left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0);
-            animation: glitch-anim 2.5s infinite linear alternate-reverse;
-        }
-        @keyframes glitch-anim {
-            0% { clip: rect(13px, 9999px, 83px, 0); }
-            20% { clip: rect(98px, 9999px, 6px, 0); }
-            40% { clip: rect(32px, 9999px, 20px, 0); }
-            60% { clip: rect(6px, 9999px, 62px, 0); }
-            80% { clip: rect(72px, 9999px, 39px, 0); }
-            100% { clip: rect(4px, 9999px, 91px, 0); }
+
+        /* HEX STREAM BACKGROUND */
+        #hex-stream {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; color: #0f0; opacity: 0.1; font-size: 10px; word-break: break-all; overflow: hidden; pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="matrix-canvas"></canvas>
-    <div id="crt-overlay"></div>
-    <div id="vignette"></div>
+    <div class="scanlines"></div>
+    <div class="noise-bg"></div>
+    <div id="hex-stream"></div>
 
-    <!-- BOOT SEQUENCE -->
-    <div id="boot-sequence">
-        <div id="boot-log"></div>
+    <!-- AUTH GATE -->
+    <div id="auth-layer">
+        <h1 style="font-size: 2rem; margin-bottom: 20px;">ENCRYPTED_GATEWAY</h1>
+        <div style="width: 100%; max-width: 300px;">
+            <div style="color: var(--alert); margin-bottom: 5px;" class="blink">WARNING: UNSECURE CONNECTION</div>
+            <input type="password" id="pw" class="cyber-input" placeholder="ENTER KEY CODE (1)" style="text-align: center;">
+            <button class="cyber-btn" onclick="login()">DECRYPT</button>
+        </div>
     </div>
 
-    <!-- MAIN UI -->
-    <div id="main-ui">
-        <div class="status-bar">
-            <div>
-                <span class="glitch-text" data-text="ROOT_ACCESS">ROOT_ACCESS</span>
-                <span style="font-size:0.7em; color:var(--s-color)">// PID: 9928</span>
+    <!-- MAIN VIEWPORT -->
+    <div id="viewport" style="display:none; opacity:0;">
+        <header>
+            <h1>SYS_OVERRIDE_V4</h1>
+            <div style="font-size: 0.6rem; margin-top: 5px;">
+                LAT: <span id="lat">00.000</span> LON: <span id="lon">00.000</span> <br>
+                UPLINK: <span style="color:var(--main)">ESTABLISHED</span>
             </div>
-            <div id="clock">00:00:00</div>
+        </header>
+
+        <div class="panel">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem; border-bottom:1px solid var(--dim);">
+                <span>TARGET_LOG</span>
+                <span class="blink" style="color:var(--alert)">REC</span>
+            </div>
+            <div id="console">Initializing Cyber-Warfare Protocol...<br></div>
         </div>
 
-        <div class="module">
-            <div class="module-header">MEMORY_DUMP</div>
-            <div id="hex-view"></div>
+        <div class="panel">
+            <input type="text" id="target-search" class="cyber-input" placeholder="SEARCH BUNDLE_ID...">
+            <div style="display: flex; gap: 5px;">
+                <button class="cyber-btn" onclick="scanNetwork()">SCAN_NET</button>
+                <button class="cyber-btn danger" onclick="forceReset()">NUKE_CACHE</button>
+            </div>
         </div>
 
-        <div class="module" style="flex: 1; display:flex; flex-direction:column;">
-            <div class="module-header">KERNEL_LOG</div>
-            <div id="console"></div>
-        </div>
-
-        <!-- AUTH OVERLAY (INSIDE UI) -->
-        <div id="lock-overlay" style="margin-bottom:10px;">
-            <input type="password" id="pw-input" placeholder="ENTER ROOT KEY..." style="text-align:center;">
-        </div>
-
-        <!-- CONTROLS (HIDDEN UNTIL UNLOCK) -->
-        <div id="control-panel" class="control-grid" style="display:none;">
-            <input type="text" id="target-search" placeholder="SEARCH TARGET APP...">
-            <button onclick="scan()">SCAN_NET</button>
-            <button class="danger" onclick="nuke()">FORCE_RST</button>
-            <button onclick="toggleAudio()" id="audio-btn">AUDIO: OFF</button>
-            <div id="target-list" style="grid-column: span 2; max-height:150px; overflow-y:auto; border:1px solid var(--s-color); display:none;"></div>
-        </div>
-
-        <div style="font-size:0.6em; text-align:center; color:#444; margin-top:5px;">
-            V_EXPLOIT_FRAMEWORK // BUILD 99.1
+        <div id="results" style="flex:1; overflow-y:auto; border: 1px solid var(--dim); padding: 5px;">
+            <!-- Results populate here -->
         </div>
     </div>
 
     <script>
-        // === CONFIG ===
-        const PASS = "1"; // Keep it dumb simple
-        const LOG = document.getElementById('console');
-        const BOOT = document.getElementById('boot-log');
-        let audioCtx = null;
-        let isMuted = true;
-
-        // === MATRIX RAIN ===
-        const canvas = document.getElementById('matrix-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&';
-        const drops = Array(Math.floor(canvas.width / 20)).fill(1);
+        const PW = "1";
+        const CONSOLE = document.getElementById('console');
         
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0f0';
-            ctx.font = '15px monospace';
-            for(let i=0; i<drops.length; i++) {
-                const text = chars[Math.floor(Math.random()*chars.length)];
-                ctx.fillText(text, i*20, drops[i]*20);
-                if(drops[i]*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
-            requestAnimationFrame(drawMatrix);
-        }
-        drawMatrix();
-
-        // === BOOT SEQUENCE ===
-        const bootText = [
-            "INITIALIZING BIOS...",
-            "CHECKING MEMORY... 64GB OK",
-            "LOADING KERNEL... DARWIN 21.0.0",
-            "MOUNTING FILESYSTEMS... RW",
-            "BYPASSING SECURITY ENCLAVE...",
-            "DECRYPTING PAYLOADS...",
-            "SYSTEM READY."
-        ];
-
-        let bootIndex = 0;
-        function runBoot() {
-            if(bootIndex < bootText.length) {
-                const div = document.createElement('div');
-                div.innerText = "> " + bootText[bootIndex];
-                BOOT.appendChild(div);
-                bootIndex++;
-                setTimeout(runBoot, 150);
-            } else {
-                setTimeout(() => {
-                    document.getElementById('boot-sequence').style.display = 'none';
-                    document.getElementById('main-ui').style.opacity = '1';
-                    startHexDump();
-                    updateClock();
-                    
-                    if(window.__PAYLOAD_ACTIVE) {
-                         unlockUI();
-                         log("PAYLOAD INJECTED SUCCESSFULLY.", "sys");
-                         log("SMART BANNER DAEMON: ACTIVE", "sys");
-                    }
-                }, 500);
-            }
-        }
-        window.onload = runBoot;
-
-        // === HEX DUMP ===
-        function startHexDump() {
-            const el = document.getElementById('hex-view');
+        // === BACKGROUND NOISE ===
+        function streamHex() {
+            const el = document.getElementById('hex-stream');
             setInterval(() => {
-                let hex = '';
-                for(let i=0; i<20; i++) hex += Math.floor(Math.random()*255).toString(16).padStart(2,'0') + ' ';
-                el.innerText = hex + '\n' + el.innerText.substring(0, 200);
-            }, 100);
+                const chunk = Math.random().toString(16).substr(2, 8);
+                el.innerText += chunk + " ";
+                if(el.innerText.length > 5000) el.innerText = el.innerText.substring(2000);
+            }, 50);
         }
+        streamHex();
 
-        // === CLOCK ===
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', {hour12:false}) + ":" + now.getMilliseconds();
-            requestAnimationFrame(updateClock);
-        }
+        // === LOCATION SPOOF ===
+        setInterval(() => {
+            document.getElementById('lat').innerText = (Math.random() * 90).toFixed(4);
+            document.getElementById('lon').innerText = (Math.random() * 180).toFixed(4);
+        }, 500);
 
-        // === SYSTEM LOGIC ===
-        function log(msg, type='') {
-            const d = document.createElement('div');
-            d.className = `msg ${type}`;
-            d.innerText = `[${Date.now().toString().slice(-4)}] ${msg}`;
-            LOG.appendChild(d);
-            LOG.scrollTop = LOG.scrollHeight;
-            playBeep();
+        // === LOGGING ===
+        function log(msg, type='INFO') {
+            const time = new Date().toLocaleTimeString('en-US', {hour12:false});
+            CONSOLE.innerHTML += `<span style="color: #666">[${time}]</span> <span style="${type === 'ERR' ? 'color:red' : 'color:#0f0'}">${type}: ${msg}</span><br>`;
+            CONSOLE.scrollTop = CONSOLE.scrollHeight;
         }
 
         // === AUTH ===
-        const pwInput = document.getElementById('pw-input');
-        pwInput.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                if(pwInput.value === PASS) {
-                    unlockUI();
-                } else {
-                    log("ACCESS DENIED. IP LOGGED.", "err");
-                    pwInput.value = "";
-                    playTone(100, 0.5, 'sawtooth');
-                }
-            }
-        });
+        function login() {
+            const val = document.getElementById('pw').value;
+            if(val === PW) {
+                document.getElementById('auth-layer').style.display = 'none';
+                const vp = document.getElementById('viewport');
+                vp.style.display = 'flex';
+                
+                // Fade in effect
+                let op = 0;
+                const f = setInterval(() => {
+                    if(op >= 1) clearInterval(f);
+                    vp.style.opacity = op;
+                    op += 0.1;
+                }, 30);
 
-        function unlockUI() {
-            document.getElementById('lock-overlay').style.display = 'none';
-            document.getElementById('control-panel').style.display = 'grid';
-            log("USER AUTHENTICATED: ROOT", "sys");
-            playTone(600, 0.1, 'square');
-            setTimeout(() => playTone(800, 0.2, 'square'), 100);
+                if(window.__INJECTED) {
+                    log("EXPLOIT ACTIVE.", "WARN");
+                    log("SMART BANNER DAEMON RUNNING...", "INFO");
+                }
+            } else {
+                document.getElementById('pw').value = '';
+                alert("ACCESS DENIED");
+            }
         }
+
+        // === KEY LISTENERS ===
+        document.getElementById('pw').addEventListener('keypress', (e) => { if(e.key === 'Enter') login(); });
+        document.getElementById('target-search').addEventListener('keypress', (e) => { if(e.key === 'Enter') scanNetwork(); });
 
         // === SCANNER ===
-        async function scan() {
-            const term = document.getElementById('target-search').value;
-            if(!term) return log("INPUT ERROR: NULL", "err");
-            
-            log(`INITIATING NETWORK SCAN: ${term}...`, "sys");
-            const list = document.getElementById('target-list');
-            list.style.display = 'block';
-            list.innerHTML = '<div style="padding:5px; animation:blink-r 0.5s infinite;">SCANNING...</div>';
+        async function scanNetwork() {
+            const q = document.getElementById('target-search').value;
+            if(!q) return log("INPUT EMPTY", "ERR");
+
+            log(`SCANNING APPLE SERVERS FOR: ${q}...`, "INFO");
+            const resArea = document.getElementById('results');
+            resArea.innerHTML = "<div class='blink'>FETCHING PACKETS...</div>";
 
             try {
-                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=US&media=software&limit=5`);
-                const data = await res.json();
+                const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&country=US&media=software&limit=5`);
+                const d = await r.json();
                 
-                list.innerHTML = '';
-                if(data.resultCount === 0) {
-                    log("TARGET NOT FOUND", "err");
-                    list.innerHTML = '<div style="padding:5px; color:red;">NO_DATA</div>';
-                    return;
-                }
+                resArea.innerHTML = "";
+                
+                if(d.resultCount === 0) return log("NO TARGETS FOUND", "ERR");
 
-                data.results.forEach(app => {
+                d.results.forEach(app => {
                     const row = document.createElement('div');
-                    row.style.padding = '5px';
-                    row.style.borderBottom = '1px solid #333';
-                    row.style.display = 'flex';
-                    row.style.justifyContent = 'space-between';
+                    row.style.borderBottom = "1px solid #004400";
+                    row.style.padding = "10px";
+                    row.style.display = "flex";
+                    row.style.justifyContent = "space-between";
+                    row.style.alignItems = "center";
+                    
                     row.innerHTML = `
-                        <span>${app.trackName.substring(0,15)}...</span>
-                        <button style="padding:2px 5px; font-size:0.8rem;" onclick="exploit('${app.trackId}')">INJECT</button>
+                        <div>
+                            <div style="font-weight:bold; color:white;">${app.trackName}</div>
+                            <div style="font-size:0.6rem; color:#00aa00;">${app.bundleId}</div>
+                        </div>
+                        <button class="cyber-btn" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="inject('${app.trackId}')">INJECT</button>
                     `;
-                    list.appendChild(row);
+                    resArea.appendChild(row);
                 });
-                log(`TARGETS ACQUIRED: ${data.resultCount}`, "sys");
+                log(`FOUND ${d.resultCount} VULNERABLE TARGETS`, "INFO");
 
             } catch(e) {
-                log("CONNECTION_REFUSED", "err");
+                log("CONNECTION FAILED", "ERR");
             }
         }
 
-        // === EXPLOIT TRIGGER ===
-        function exploit(id) {
-            log(`INJECTING KERNEL HOOK: ${id}`, "err");
-            playTone(100, 0.1, 'sawtooth');
-            setTimeout(() => playTone(50, 0.5, 'sawtooth'), 100);
-            
-            document.body.style.animation = "glitch-anim 0.2s infinite";
-            
+        // === EXPLOIT ===
+        function inject(id) {
+            log(`INJECTING PAYLOAD: ${id}`, "WARN");
+            document.body.style.filter = "invert(1)";
             setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('x_id', id);
-                url.searchParams.set('ts', Date.now()); // CACHE BUSTER
-                window.location.href = url.toString();
-            }, 1000);
+                document.body.style.filter = "invert(0)";
+                const u = new URL(window.location.href);
+                u.searchParams.set('target', id);
+                u.searchParams.set('t', Date.now()); // CACHE KILLER
+                window.location.href = u.toString();
+            }, 200);
         }
 
-        function nuke() {
-            log("FLUSHING BUFFERS...", "err");
-            const url = new URL(window.location.href);
-            url.searchParams.set('rst', Math.random());
-            window.location.href = url.toString();
-        }
-
-        // === AUDIO SYNTHESIS ===
-        function toggleAudio() {
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            isMuted = !isMuted;
-            document.getElementById('audio-btn').innerText = isMuted ? "AUDIO: OFF" : "AUDIO: ACTIVE";
-            if(!isMuted) startAmbientHum();
-        }
-
-        function playBeep() {
-            if(isMuted || !audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.value = 1000 + Math.random() * 500;
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.05);
-            osc.stop(audioCtx.currentTime + 0.05);
-        }
-
-        function playTone(freq, dur, type='sine') {
-            if(isMuted || !audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.value = freq;
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + dur);
-            osc.stop(audioCtx.currentTime + dur);
-        }
-
-        function startAmbientHum() {
-            if(isMuted) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.value = 50; // Low hum
-            osc.type = 'sawtooth';
-            gain.gain.value = 0.005; // Very quiet
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
+        function forceReset() {
+            log("INITIATING EMERGENCY FLUSH...", "ERR");
+            const u = new URL(window.location.href);
+            u.searchParams.set('reset', Math.random());
+            window.location.href = u.toString();
         }
 
     </script>
