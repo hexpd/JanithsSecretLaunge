@@ -2,427 +2,371 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- ANTI-CACHE: NO SURVIVORS -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
-    <!-- === KERNEL LEVEL INJECTION (MUST BE FIRST) === -->
+    <title>V // KERNEL_EXPLOIT</title>
+    
+    <!-- 
+      === PAYLOAD INJECTION KERNEL ===
+      Only injects if 'targetAppId' is strictly defined.
+    -->
     <script>
-        (function() {
-            const p = new URLSearchParams(window.location.search);
-            const tid = p.get('targetAppId');
-            if (tid) {
-                document.write('<meta name="apple-itunes-app" content="app-id=' + tid + ', affiliate-data=checkm8-exploit">');
-            }
-        })();
+        const params = new URLSearchParams(window.location.search);
+        const targetId = params.get('targetAppId');
+        
+        if (targetId) {
+            // INJECTING KERNEL PATCH (SMART BANNER)
+            document.write(`<meta name="apple-itunes-app" content="app-id=${targetId}">`);
+        }
     </script>
-
-    <title>checkm8 // root_shell</title>
 
     <style>
         :root {
-            --bg: #050505;
-            --term-green: #33ff00;
-            --term-dim: #1a8000;
-            --err: #ff3333;
-            --warn: #ffcc00;
-            --font: 'Courier New', Courier, monospace;
+            --bg: #000000;
+            --text: #ffffff;
+            --accent: #00ff41; /* Hacker Green */
+            --dim: #555555;
+            --console-bg: #111;
+            --font: 'Menlo', 'Consolas', 'Courier New', monospace;
         }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg);
-            color: var(--term-green);
+            color: var(--text);
             font-family: var(--font);
             margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
+            padding: 10px;
+            font-size: 12px;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            font-size: 13px;
-            line-height: 1.4;
-            text-shadow: 0 0 2px var(--term-dim);
+            min-height: 100vh;
         }
 
-        /* === CRT SCANLINE EFFECT === */
-        body::after {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        /* === UI CONTAINERS === */
-        #main-interface {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            z-index: 1;
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
+        /* HEADER / ASCII ART */
         header {
-            border-bottom: 1px solid var(--term-dim);
+            border-bottom: 1px solid var(--dim);
             padding-bottom: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            letter-spacing: -1px;
+            font-weight: bold;
+        }
+
+        .status-bar {
             display: flex;
             justify-content: space-between;
+            color: var(--dim);
+            margin-top: 5px;
+            font-size: 0.7rem;
+        }
+
+        /* AUTH SCREEN */
+        #auth-layer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
         }
 
-        .header-title { font-weight: bold; font-size: 1.1em; letter-spacing: 1px; }
-        .header-status { font-size: 0.8em; color: var(--term-dim); }
-
-        /* === TERMINAL WINDOW === */
-        #console-window {
-            flex-grow: 1;
-            border: 1px solid var(--term-dim);
-            background: rgba(0, 20, 0, 0.3);
+        /* INPUTS */
+        .terminal-input {
+            background: var(--console-bg);
+            border: 1px solid var(--dim);
+            color: var(--accent);
             padding: 10px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            font-size: 10px;
-            white-space: pre-wrap;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-        }
-
-        .log-line { margin-bottom: 2px; opacity: 0; animation: fadeIn 0.1s forwards; }
-        .log-line.success { color: var(--term-green); }
-        .log-line.error { color: var(--err); }
-        .log-line.sys { color: #aaa; }
-        .log-line.warn { color: var(--warn); }
-        
-        @keyframes fadeIn { to { opacity: 1; } }
-
-        /* === CONTROLS === */
-        .input-group {
-            display: flex;
-            gap: 10px;
+            width: 100%;
+            font-family: inherit;
             margin-bottom: 10px;
-        }
-
-        input {
-            background: #000;
-            border: 1px solid var(--term-dim);
-            color: var(--term-green);
-            padding: 12px;
-            font-family: inherit;
-            flex: 1;
+            box-sizing: border-box;
             outline: none;
-            text-transform: uppercase;
-            border-radius: 0; /* iOS fix */
-            -webkit-appearance: none; /* iOS fix */
         }
-        input:focus { border-color: var(--term-green); box-shadow: 0 0 5px var(--term-dim); }
-        input::placeholder { color: var(--term-dim); opacity: 0.5; }
 
-        button {
-            background: var(--term-dim);
-            color: #000;
-            border: 1px solid var(--term-green);
-            padding: 0 20px;
-            font-family: inherit;
+        .terminal-input:focus {
+            border-color: var(--accent);
+        }
+
+        /* BUTTONS */
+        .btn {
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            padding: 10px 15px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
-            border-radius: 0; /* iOS fix */
-            -webkit-appearance: none;
+            font-family: inherit;
+            width: 100%;
+            margin-bottom: 5px;
+            transition: 0.1s;
         }
-        button:active { background: var(--term-green); }
-        
+
+        .btn:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
         .btn-respring {
             background: transparent;
-            color: var(--err);
-            border-color: var(--err);
-            font-size: 10px;
-            width: 100%;
-            padding: 10px;
-        }
-
-        /* === APP LIST === */
-        #pkg-manager {
-            height: 180px;
-            border-top: 1px solid var(--term-dim);
-            overflow-y: auto;
-            display: none; 
-        }
-
-        .pkg-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px dashed #222;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .pkg-item:hover { background: #0a0a0a; padding-left: 5px; }
-
-        .pkg-icon {
-            width: 35px; height: 35px;
-            background: #222;
-            margin-right: 12px;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-        .pkg-info { flex: 1; }
-        .pkg-name { font-weight: bold; font-size: 12px; color: #fff; }
-        .pkg-id { font-size: 10px; color: #666; }
-        .pkg-action { color: var(--term-green); font-size: 10px; font-weight: bold; }
-
-        /* === AUTH OVERLAY === */
-        #auth-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            color: var(--text);
+            border: 1px solid var(--dim);
         }
         
-        /* THIS FORM WRAPPER FIXES THE IPAD ENTER KEY ISSUE */
-        form {
-            width: 280px;
+        .btn-respring:hover {
+            border-color: red;
+            color: red;
+        }
+
+        /* LOG CONSOLE */
+        #console-window {
+            flex-grow: 1;
+            background: #0a0a0a;
+            border: 1px solid var(--dim);
+            padding: 10px;
+            font-size: 10px;
+            overflow-y: auto;
+            max-height: 40vh;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .log-line { margin-bottom: 2px; }
+        .log-line.info { color: #aaa; }
+        .log-line.success { color: var(--accent); }
+        .log-line.warn { color: yellow; }
+        .log-line.kernel { color: #ff00ff; } /* Pink for kernel panic vibes */
+
+        /* APP GRID */
+        #app-list {
             display: flex;
             flex-direction: column;
+            gap: 8px;
         }
 
-        .auth-btn {
-            width: 100%; 
-            margin-top: 10px; 
-            padding: 15px; /* Bigger touch target */
-            font-size: 14px;
+        .app-item {
+            display: flex;
+            align-items: center;
+            background: var(--console-bg);
+            border: 1px solid var(--dim);
+            padding: 8px;
         }
 
+        .app-item img {
+            width: 40px; height: 40px;
+            margin-right: 10px;
+            border-radius: 8px;
+            filter: grayscale(100%);
+        }
+
+        .app-details {
+            flex-grow: 1;
+        }
+
+        .app-name { font-weight: bold; color: #fff; }
+        .app-bundle { color: var(--dim); font-size: 0.7rem; }
+
+        .btn-inject {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .btn-inject:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* UTILS */
         .hidden { display: none !important; }
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
     </style>
 </head>
 <body>
 
-    <!-- === AUTHENTICATION LAYER === -->
-    <div id="auth-overlay">
-        <!-- 
-           Wrapping this in a FORM is the secret sauce for iOS Keyboards.
-           onsubmit="return false" stops the page from refreshing.
-        -->
-        <form id="login-form">
-            <div style="margin-bottom: 5px; font-size: 11px; text-align: left;">secure_enclave@iphone:~$ login</div>
-            
-            <input type="password" id="auth-pass" placeholder="PASSWORD REQUIRED" autofocus autocomplete="off">
-            
-            <!-- Type="submit" makes the "Go" button work naturally -->
-            <button type="submit" class="auth-btn">AUTHENTICATE</button>
-            
-            <div id="auth-status" style="margin-top: 10px; height: 20px; color: var(--err); font-size: 11px; text-align: center;"></div>
-        </form>
-    </div>
-
-    <!-- === MAIN INTERFACE === -->
-    <div id="main-interface" class="hidden">
-        <header>
-            <div class="header-title">checkm8 // v3.2</div>
-            <div class="header-status">
-                <span id="usb-status">USB: CONNECTED</span>
+    <!-- AUTH GATE -->
+    <div id="auth-layer">
+        <div style="width: 300px; text-align: left;">
+            <div style="margin-bottom: 10px; color: var(--accent);">
+                root@ios-kernel:~$ ./login
             </div>
-        </header>
-
-        <div id="console-window">
-            <div class="log-line sys">Booting xnu-8792.41.9~2/RELEASE_ARM64_T8110...</div>
-        </div>
-
-        <div class="input-group">
-            <input type="text" id="repo-search" placeholder="SEARCH BUNDLE ID...">
-            <button onclick="searchRepo()">SCAN</button>
-        </div>
-
-        <div id="pkg-manager">
-            <!-- Results go here -->
-        </div>
-
-        <div style="margin-top: auto; text-align: center; padding-top: 10px;">
-            <button class="btn-respring" onclick="respring()">EXIT RECOVERY (RESPRING)</button>
+            <input type="password" id="pass-input" class="terminal-input" placeholder="ENTER ROOT PASSWORD">
+            <button class="btn" onclick="attemptLogin()">AUTHENTICATE</button>
+            <div id="auth-msg" style="color: red; margin-top: 5px;"></div>
         </div>
     </div>
+
+    <!-- MAIN INTERFACE -->
+    <header>
+        <h1>MDM_JAILBREAK_v6</h1>
+        <div class="status-bar">
+            <span>UID: 0 (root)</span>
+            <span>AMFI: PATCHED</span>
+            <span>SANDBOX: ESCAPED</span>
+        </div>
+    </header>
+
+    <div id="console-window">
+        <!-- Logs appear here -->
+    </div>
+
+    <div id="controls">
+        <input type="text" id="search-input" class="terminal-input" placeholder="SEARCH BUNDLE ID / APP NAME">
+        
+        <div style="display: flex; gap: 5px;">
+            <button class="btn" style="flex: 2;" onclick="runSearch()">SCAN REPO</button>
+            <button class="btn btn-respring" style="flex: 1;" onclick="respringDevice()">RESPRING</button>
+        </div>
+    </div>
+
+    <div id="app-list"></div>
 
     <script>
-        // === CONFIGURATION ===
-        const PASSWORD = "checkm8"; 
-        const TERM = document.getElementById('console-window');
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTarget = urlParams.get('targetAppId');
-
-        window.onload = function() {
-            // iOS fix: sometimes autofocus is blocked, but we try anyway
-            document.getElementById('auth-pass').focus();
-        };
-
-        // 1. FORM SUBMISSION LOGIC (Fixes iPad "Enter" Key)
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault(); // Stop actual form submission
-            checkPass(); // Run our code
-        });
-
-        function checkPass() {
-            const input = document.getElementById('auth-pass');
-            const status = document.getElementById('auth-status');
-            
-            // Clean up input (trim spaces just in case)
-            if (input.value.trim() === PASSWORD) {
-                // SUCCESS
-                status.style.color = "var(--term-green)";
-                status.innerText = "ACCESS GRANTED. DECRYPTING...";
-                
-                // Hide keyboard on mobile
-                input.blur(); 
-                
-                setTimeout(() => {
-                    document.getElementById('auth-overlay').classList.add('hidden');
-                    document.getElementById('main-interface').classList.remove('hidden');
-                    initTerminal();
-                }, 800);
-            } else {
-                // FAIL
-                status.innerText = "ACCESS DENIED: INCORRECT KEY.";
-                input.value = "";
-                // Don't focus immediately on mobile as it can be annoying, 
-                // but for this hacky vibe it's fine.
-                input.focus(); 
-            }
-        }
-
-        // 2. VERBOSE TERMINAL BOOT SEQUENCE
-        function initTerminal() {
-            const bootLogs = [
-                "Initializing IOKit connection...",
-                "mach_port_allocate: success (0x4103)",
-                "Heap spray initialized: 0x10000000 -> 0x15000000",
-                "Mapping kernel memory...",
-                "Kernel base: 0xfffffff007004000 (slide: 0x7004000)",
-                "Bypassing KASLR...",
-                "Patching AMFI credentials...",
-                "[WARN] AMFI: code signature validation failed (ignored)",
-                "Race condition triggered (vm_map_copyin)...",
-                "TF0 obtained. UID set to 0 (root).",
-                "Remounting /dev/disk0s1s1 as rw...",
-                "Modifying host file...",
-                "Injecting dylib: /usr/lib/libsubstrate.dylib",
-                "Reloading SpringBoard settings...",
-                "Exploit chain complete."
-            ];
-
-            if (activeTarget) {
-                bootLogs.push(`[+] TARGET FOUND IN NVRAM: ${activeTarget}`);
-                bootLogs.push(`[+] INJECTING SMART BANNER META TAG...`);
-                bootLogs.push(`[+] SUCCESS. BANNER SHOULD BE RENDERED.`);
-            } else {
-                bootLogs.push(`[INFO] No target payload detected. Waiting for user input...`);
-            }
-
-            let i = 0;
-            function runLog() {
-                if (i < bootLogs.length) {
-                    let type = 'sys';
-                    if (bootLogs[i].includes('WARN')) type = 'warn';
-                    if (bootLogs[i].includes('SUCCESS') || bootLogs[i].includes('complete')) type = 'success';
-                    
-                    log(bootLogs[i], type);
-                    i++;
-                    setTimeout(runLog, Math.random() * 200 + 50);
-                }
-            }
-            runLog();
-        }
-
-        function log(msg, type = 'sys') {
+        // === CONFIG ===
+        const ROOT_PASS = "alpine"; // Default iOS root password lol. CHANGE THIS.
+        const CONSOLE = document.getElementById('console-window');
+        
+        // === BOOT SEQUENCE ===
+        function log(msg, type = 'info') {
             const line = document.createElement('div');
+            const time = new Date().toLocaleTimeString('en-US', {hour12: false});
             line.className = `log-line ${type}`;
-            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-            line.innerHTML = `<span style="opacity:0.5; font-size: 0.9em;">[${time}]</span> ${msg}`;
-            TERM.appendChild(line);
-            TERM.scrollTop = TERM.scrollHeight;
+            line.innerText = `[${time}] ${msg}`;
+            CONSOLE.appendChild(line);
+            CONSOLE.scrollTop = CONSOLE.scrollHeight;
         }
 
-        // 3. REPO SEARCH
-        async function searchRepo() {
-            const term = document.getElementById('repo-search').value;
-            const container = document.getElementById('pkg-manager');
+        function fakeBoot() {
+            const msgs = [
+                "Initializing kernel exploit...",
+                "Bypassing KPP...",
+                "Patching AMFI...",
+                "Remounting / as rw...",
+                "Bootstrap loaded.",
+                "Starting UI..."
+            ];
             
-            if (!term) return log("Error: Search term empty.", "error");
+            let delay = 0;
+            msgs.forEach((m, i) => {
+                setTimeout(() => {
+                    log(m, i === msgs.length -1 ? 'success' : 'kernel');
+                }, delay);
+                delay += 150;
+            });
+        }
 
-            log(`Querying Apple CDN for: "${term}"...`);
-            container.style.display = 'block';
-            container.innerHTML = '<div style="padding:10px; color:#666;">Downloading package lists...</div>';
+        // === AUTH ===
+        function attemptLogin() {
+            const p = document.getElementById('pass-input').value;
+            if (p === ROOT_PASS) {
+                document.getElementById('auth-layer').classList.add('hidden');
+                fakeBoot();
+                
+                // Check if we are in an exploited state
+                const urlP = new URLSearchParams(window.location.search);
+                if (urlP.get('targetAppId')) {
+                    setTimeout(() => {
+                        log(`WARNING: EXPLOIT ACTIVE (ID: ${urlP.get('targetAppId')})`, 'warn');
+                        log("Banner should be visible. If stuck, hit RESPRING.", 'info');
+                    }, 1000);
+                }
+            } else {
+                document.getElementById('auth-msg').innerText = "Incorrect password.";
+                document.getElementById('pass-input').value = "";
+            }
+        }
+
+        // === SEARCH LOGIC ===
+        async function runSearch() {
+            const term = document.getElementById('search-input').value;
+            if (!term) return log("Error: Input empty", 'warn');
+
+            log(`Scanning Apple servers for: ${term}...`);
+            document.getElementById('app-list').innerHTML = '';
 
             try {
-                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=software&limit=5`);
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=DE&media=software&limit=6`);
                 const data = await res.json();
 
-                container.innerHTML = '';
-                
-                if (data.resultCount === 0) {
-                    log("No packages found in repository.", "error");
-                    container.innerHTML = '<div style="padding:10px; color:#666;">No results.</div>';
+                if (data.results.length === 0) {
+                    log("No bundles found.", 'warn');
                     return;
                 }
 
                 data.results.forEach(app => {
                     const el = document.createElement('div');
-                    el.className = 'pkg-item';
+                    el.className = 'app-item';
                     el.innerHTML = `
-                        <img src="${app.artworkUrl60}" class="pkg-icon">
-                        <div class="pkg-info">
-                            <div class="pkg-name">${app.trackName}</div>
-                            <div class="pkg-id">${app.bundleId}</div>
+                        <img src="${app.artworkUrl60}">
+                        <div class="app-details">
+                            <div class="app-name">${app.trackName}</div>
+                            <div class="app-bundle">${app.bundleId}</div>
                         </div>
-                        <div class="pkg-action">[INJECT]</div>
+                        <button class="btn-inject" onclick="injectPayload('${app.trackId}')">INJECT</button>
                     `;
-                    el.onclick = () => inject(app.trackId, app.trackName);
-                    container.appendChild(el);
+                    document.getElementById('app-list').appendChild(el);
                 });
-                log(`Package list updated. ${data.resultCount} items found.`, "success");
+                log(`Found ${data.results.length} candidates.`, 'success');
 
             } catch (e) {
-                log("Connection timed out.", "error");
+                log("Network error.", 'warn');
             }
         }
 
-        // 4. INJECTION
-        function inject(id, name) {
-            log(`Preparing injection for ${name}...`, "sys");
-            log(`Writing bundle ID ${id} to NVRAM...`, "warn");
+        // === EXPLOIT LOGIC ===
+        function injectPayload(id) {
+            log(`Preparing payload for ID: ${id}`, 'kernel');
+            log("Stopping services...", 'info');
             
             setTimeout(() => {
                 const url = new URL(window.location.href);
-                url.search = `?targetAppId=${id}`;
-                window.location.href = url.toString();
-            }, 1500);
-        }
-
-        // 5. RESPRING
-        function respring() {
-            log("Sending SIGTERM to backboardd...", "error");
-            setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.search = ''; 
+                // WIPE EVERYTHING to ensure no overlap
+                url.search = '';
+                // Set only the target
+                url.searchParams.set('targetAppId', id);
+                
+                log("Rebooting into exploited state...", 'success');
                 window.location.href = url.toString();
             }, 800);
         }
 
-        // Search bar Enter Key
-        document.getElementById('repo-search').addEventListener('keyup', (e) => {
-            if(e.key === 'Enter') searchRepo();
+        // === RESPRING (RESET) LOGIC ===
+        function respringDevice() {
+            log("RESPRING INITIATED...", 'warn');
+            log("Clearing kernel cache...", 'info');
+            
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.search = ''; // NUKE PARAMETERS
+                window.location.href = url.toString();
+            }, 500);
+        }
+
+        // KEY LISTENER
+        document.getElementById('pass-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') attemptLogin();
+        });
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') runSearch();
         });
 
     </script>
