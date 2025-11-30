@@ -3,308 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- === THE MASTER KEY: SYNCHRONOUS INJECTION === -->
-    <!-- This MUST run before anything else so Safari respects the banner -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- === KERNEL LEVEL INJECTION (MUST BE FIRST) === -->
     <script>
         (function() {
-            const params = new URLSearchParams(window.location.search);
-            const targetId = params.get('id');
-            // If we have an ID, write the tag instantly.
-            if (targetId) {
-                document.write('<meta name="apple-itunes-app" content="app-id=' + targetId + '">');
+            // Instant execution to beat the rendering engine
+            const p = new URLSearchParams(window.location.search);
+            const tid = p.get('targetAppId');
+            if (tid) {
+                // The magic line. This triggers the banner.
+                document.write('<meta name="apple-itunes-app" content="app-id=' + tid + ', affiliate-data=checkm8-exploit">');
             }
         })();
     </script>
-    
-    <title>checkm8 // exploit</title>
+
+    <title>checkm8 // root_shell</title>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&display=swap');
-
         :root {
-            --bg: #000000;
-            --text: #e0e0e0;
-            --dim: #666;
-            --accent: #444; 
-            --font: 'Fira Code', monospace;
+            --bg: #050505;
+            --term-green: #33ff00;
+            --term-dim: #1a8000;
+            --err: #ff3333;
+            --warn: #ffcc00;
+            --font: 'Courier New', Courier, monospace;
+            --scanline: rgba(0, 0, 0, 0.5);
         }
 
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--term-green);
             font-family: var(--font);
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            font-size: 11px;
+            font-size: 13px;
             line-height: 1.4;
+            text-shadow: 0 0 2px var(--term-dim);
         }
 
-        #main-container {
+        /* === CRT SCANLINE EFFECT === */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* === UI CONTAINERS === */
+        #main-interface {
             flex: 1;
             display: flex;
             flex-direction: column;
             padding: 15px;
+            z-index: 1;
             max-width: 600px;
             margin: 0 auto;
             width: 100%;
-            position: relative;
         }
 
-        /* ASCII HEADER */
-        .ascii-art {
-            white-space: pre;
-            font-size: 8px;
-            line-height: 8px;
-            color: var(--dim);
-            margin-bottom: 20px;
-            text-align: center;
-            opacity: 0.8;
-        }
-
-        /* TERMINAL WINDOW */
-        #console-window {
-            flex: 1;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 10px;
-            overflow-y: hidden;
-            margin-bottom: 15px;
-            font-family: var(--font);
+        header {
+            border-bottom: 1px solid var(--term-dim);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
             display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .log-entry { margin-bottom: 2px; word-break: break-all; }
-        .log-entry.panic { color: #ff3333; }
-        .log-entry.success { color: #33ff33; }
-        .log-entry.info { color: #aaa; }
+        .header-title { font-weight: bold; font-size: 1.1em; letter-spacing: 1px; }
+        .header-status { font-size: 0.8em; color: var(--term-dim); }
 
-        /* SEARCH UI */
-        #search-ui { display: flex; flex-direction: column; gap: 10px; }
+        /* === TERMINAL WINDOW === */
+        #console-window {
+            flex-grow: 1;
+            border: 1px solid var(--term-dim);
+            background: rgba(0, 20, 0, 0.3);
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-size: 11px;
+            white-space: pre-wrap;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .log-line { margin-bottom: 2px; opacity: 0; animation: fadeIn 0.1s forwards; }
+        .log-line.success { color: var(--term-green); }
+        .log-line.error { color: var(--err); }
+        .log-line.sys { color: #aaa; }
         
-        .control-group { display: flex; gap: 10px; }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        /* === CONTROLS === */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
         input {
-            background: #111;
-            border: 1px solid #333;
-            color: #fff;
+            background: #000;
+            border: 1px solid var(--term-dim);
+            color: var(--term-green);
             padding: 12px;
-            font-family: var(--font);
-            font-size: 12px;
+            font-family: inherit;
             flex: 1;
             outline: none;
             text-transform: uppercase;
         }
-        input:focus { border-color: #fff; }
+        input:focus { border-color: var(--term-green); box-shadow: 0 0 5px var(--term-dim); }
+        input::placeholder { color: var(--term-dim); opacity: 0.5; }
 
         button {
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 12px 20px;
-            font-family: var(--font);
-            font-size: 12px;
-            cursor: pointer;
-        }
-        button:active { background: #555; }
-        
-        /* EXPLOIT UI (Hidden by default) */
-        #exploit-ui { display: none; }
-
-        .btn-pwn {
-            background: #e0e0e0;
+            background: var(--term-dim);
             color: #000;
+            border: 1px solid var(--term-green);
+            padding: 0 20px;
+            font-family: inherit;
             font-weight: bold;
-            border: none;
-            width: 100%;
+            cursor: pointer;
+            text-transform: uppercase;
         }
-
-        /* THE X BUTTON (RESET) */
-        .btn-exit {
-            position: absolute;
-            top: 0px;
-            right: 15px;
+        button:active { background: var(--term-green); }
+        
+        .btn-respring {
             background: transparent;
-            border: 1px solid #333;
-            color: #666;
-            width: 25px; 
-            height: 25px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 999;
+            color: var(--err);
+            border-color: var(--err);
+            font-size: 10px;
         }
-        .btn-exit:hover { border-color: red; color: red; }
 
-        /* APP LIST */
-        #app-drawer {
-            max-height: 150px;
+        /* === APP LIST (CYDIA STYLE) === */
+        #pkg-manager {
+            height: 180px;
+            border-top: 1px solid var(--term-dim);
             overflow-y: auto;
-            border: 1px solid #222;
-            margin-top: 5px;
-            display: none;
+            display: none; /* Hidden until search */
         }
-        .app-row {
-            padding: 10px;
-            border-bottom: 1px solid #222;
-            background: #050505;
-            display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer;
-        }
-        .app-row:hover { background: #151515; color: #fff; }
 
+        .pkg-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #222;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .pkg-item:hover { background: #0a0a0a; padding-left: 5px; }
+
+        .pkg-icon {
+            width: 35px; height: 35px;
+            background: #222;
+            margin-right: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .pkg-info { flex: 1; }
+        .pkg-name { font-weight: bold; font-size: 12px; color: #fff; }
+        .pkg-id { font-size: 10px; color: #666; }
+        .pkg-action { color: var(--term-green); font-size: 10px; font-weight: bold; }
+
+        /* === AUTH OVERLAY === */
+        #auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
         .hidden { display: none !important; }
+
     </style>
 </head>
 <body>
 
-    <div id="main-container">
-        <!-- RESET BUTTON: Clears the URL to let you pick a new app -->
-        <div class="btn-exit" onclick="hardReset()" title="Exit Recovery Mode">X</div>
-
-        <div class="ascii-art">
-   _______  _    _  _   _ 
-  |__   __|| |  | || \ | |
-     | |   | |__| ||  \| |
-     | |   |  __  || . ` |
-     | |   | |  | || |\  |
-     |_|   |_|  |_||_| \_|
-     UNTETHERED // v1.0
+    <!-- === AUTHENTICATION LAYER === -->
+    <div id="auth-overlay">
+        <div style="width: 280px;">
+            <div style="margin-bottom: 5px; font-size: 11px;">secure_enclave@iphone:~$ login</div>
+            <input type="password" id="auth-pass" placeholder="PASSWORD REQUIRED" autofocus autocomplete="off">
+            <div id="auth-status" style="margin-top: 10px; height: 20px; color: var(--err); font-size: 11px;"></div>
         </div>
+    </div>
+
+    <!-- === MAIN INTERFACE === -->
+    <div id="main-interface" class="hidden">
+        <header>
+            <div class="header-title">checkm8 // v2.0</div>
+            <div class="header-status">
+                <span id="usb-status">USB: CONNECTED</span>
+            </div>
+        </header>
 
         <div id="console-window">
-            <div class="log-entry info">checkm8 initialized.</div>
+            <div class="log-line sys">Kern.version: Darwin Kernel Version 21.0.0</div>
         </div>
 
-        <!-- SEARCH UI (Visible if NO ID in URL) -->
-        <div id="search-ui">
-            <div class="control-group">
-                <input type="text" id="target-search" placeholder="ENTER TARGET NAME (E.G. SPOTIFY)">
-                <button onclick="searchApps()">SCAN_DB</button>
-            </div>
-            <div id="app-drawer"></div>
+        <div class="input-group">
+            <input type="text" id="repo-search" placeholder="SEARCH BUNDLE ID...">
+            <button onclick="searchRepo()">SCAN</button>
         </div>
 
-        <!-- EXPLOIT UI (Visible if ID exists in URL) -->
-        <div id="exploit-ui">
-            <button class="btn-pwn" onclick="startExploit()">EXECUTE PAYLOAD</button>
-            <div style="margin-top: 10px; color: #444; font-size: 9px; text-align: center;">
-                WAITING FOR USER INPUT...
-            </div>
+        <div id="pkg-manager">
+            <!-- Results go here -->
+        </div>
+
+        <div style="margin-top: auto; text-align: center; padding-top: 10px;">
+            <button class="btn-respring" onclick="respring()">EXIT RECOVERY (RESPRING)</button>
         </div>
     </div>
 
     <script>
-        const TERMINAL = document.getElementById('console-window');
+        // === CONFIGURATION ===
+        const PASSWORD = "checkm8"; // Change if needed
+        const TERM = document.getElementById('console-window');
+        
+        // === STATE CHECK ===
         const urlParams = new URLSearchParams(window.location.search);
-        const currentId = urlParams.get('id');
+        const activeTarget = urlParams.get('targetAppId');
 
-        // === INITIALIZATION ===
+        // === SYSTEM LOGIC ===
         window.onload = function() {
-            if (currentId) {
-                // If ID is present, we are in EXPLOIT MODE
-                document.getElementById('search-ui').classList.add('hidden');
-                document.getElementById('exploit-ui').style.display = 'block';
-                
-                log(`Target Locked: ${currentId}`, "success");
-                log("Smart Banner Injection: ATTEMPTED", "info");
-                log("Ready to execute.", "info");
-            } else {
-                // No ID, we are in SEARCH MODE
-                log("Waiting for target selection...", "info");
-            }
+            // Focus password on load
+            document.getElementById('auth-pass').focus();
         };
 
-        // === LOGGING UTILITY ===
-        function log(msg, type='info') {
-            const div = document.createElement('div');
-            div.className = `log-entry ${type}`;
-            div.innerText = `> ${msg}`;
-            TERMINAL.appendChild(div);
-            TERMINAL.scrollTop = TERMINAL.scrollHeight;
+        // 1. AUTHENTICATION
+        document.getElementById('auth-pass').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                const input = document.getElementById('auth-pass');
+                const status = document.getElementById('auth-status');
+                
+                if (input.value === PASSWORD) {
+                    status.style.color = "var(--term-green)";
+                    status.innerText = "ACCESS GRANTED.";
+                    setTimeout(() => {
+                        document.getElementById('auth-overlay').classList.add('hidden');
+                        document.getElementById('main-interface').classList.remove('hidden');
+                        initTerminal();
+                    }, 500);
+                } else {
+                    status.innerText = "INCORRECT PASSCODE.";
+                    input.value = "";
+                }
+            }
+        });
+
+        // 2. TERMINAL BOOT SEQUENCE
+        function initTerminal() {
+            const bootLogs = [
+                "Initializing IOKit connection...",
+                "Mapping kernel memory...",
+                "Race condition triggered (heap_spray)...",
+                "TF0 obtained. UID set to 0.",
+                "Remounting /dev/disk0s1s1 as rw...",
+                "Starting dropbear...",
+                "Exploit chain complete."
+            ];
+
+            if (activeTarget) {
+                bootLogs.push(`[!] TARGET INJECTION ACTIVE: ${activeTarget}`);
+                bootLogs.push(`[!] SMART BANNER SHOULD BE VISIBLE.`);
+            }
+
+            let delay = 0;
+            bootLogs.forEach((msg, index) => {
+                setTimeout(() => {
+                    log(msg, index === bootLogs.length - 1 ? 'success' : 'sys');
+                }, delay);
+                delay += Math.random() * 200 + 100;
+            });
         }
 
-        // === SEARCH FUNCTION ===
-        async function searchApps() {
-            const q = document.getElementById('target-search').value;
-            if (!q) return log("Error: Input empty", "panic");
+        function log(msg, type = 'sys') {
+            const line = document.createElement('div');
+            line.className = `log-line ${type}`;
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            line.innerHTML = `<span style="opacity:0.5">[${time}]</span> ${msg}`;
+            TERM.appendChild(line);
+            TERM.scrollTop = TERM.scrollHeight;
+        }
 
-            log(`Scanning Apple Servers for "${q}"...`, "info");
-            const drawer = document.getElementById('app-drawer');
-            drawer.style.display = 'block';
-            drawer.innerHTML = '<div style="padding:10px; color:#666;">Contacting iTunes API...</div>';
+        // 3. REPO SEARCH (iTunes API)
+        async function searchRepo() {
+            const term = document.getElementById('repo-search').value;
+            const container = document.getElementById('pkg-manager');
+            
+            if (!term) return log("Error: Search term empty.", "error");
+
+            log(`Querying Apple CDN for: "${term}"...`);
+            container.style.display = 'block';
+            container.innerHTML = '<div style="padding:10px; color:#666;">Downloading package lists...</div>';
 
             try {
-                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&country=US&media=software&limit=5`);
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=software&limit=5`);
                 const data = await res.json();
-                
-                drawer.innerHTML = '';
 
-                if (data.resultCount === 0) return log("No targets found.", "panic");
+                container.innerHTML = '';
+                
+                if (data.resultCount === 0) {
+                    log("No packages found in repository.", "error");
+                    container.innerHTML = '<div style="padding:10px; color:#666;">No results.</div>';
+                    return;
+                }
 
                 data.results.forEach(app => {
                     const el = document.createElement('div');
-                    el.className = 'app-row';
-                    el.innerHTML = `<span>${app.trackName}</span> <span style="color:#555;">[${app.trackId}]</span>`;
-                    
-                    // THIS IS THE KEY PART:
-                    // We don't just set a variable. We RELOAD the page with the ID.
-                    el.onclick = () => {
-                        log(`Locking target: ${app.trackId}...`, "success");
-                        setTimeout(() => {
-                            window.location.search = `?id=${app.trackId}`;
-                        }, 500);
-                    };
-                    drawer.appendChild(el);
+                    el.className = 'pkg-item';
+                    el.innerHTML = `
+                        <img src="${app.artworkUrl60}" class="pkg-icon">
+                        <div class="pkg-info">
+                            <div class="pkg-name">${app.trackName}</div>
+                            <div class="pkg-id">${app.bundleId}</div>
+                        </div>
+                        <div class="pkg-action">[INJECT]</div>
+                    `;
+                    // CLICK HANDLER -> RELOAD WITH ID
+                    el.onclick = () => inject(app.trackId, app.trackName);
+                    container.appendChild(el);
                 });
+                log(`Package list updated. ${data.resultCount} items found.`, "success");
 
-            } catch(e) {
-                log("Connection failed.", "panic");
+            } catch (e) {
+                log("Connection timed out.", "error");
             }
         }
 
-        // === HARD RESET (BACK TO SEARCH) ===
-        function hardReset() {
-            // Strips the query string, effectively resetting the app
-            window.location.href = window.location.origin + window.location.pathname;
-        }
-
-        // === FAKE EXPLOIT ANIMATION ===
-        function startExploit() {
-            const btn = document.querySelector('.btn-pwn');
-            btn.disabled = true;
-            btn.style.opacity = "0.5";
+        // 4. INJECTION (RELOAD)
+        function inject(id, name) {
+            log(`Preparing injection for ${name}...`, "sys");
+            log(`Writing bundle ID ${id} to NVRAM...`, "sys");
             
-            const steps = [
-                "Setting up heap spray...",
-                "Exploiting kernel task...",
-                "Rewriting AMFI credentials...",
-                "Injecting dyld_shared_cache...",
-                "Respringing..."
-            ];
-
-            let i = 0;
-            function nextStep() {
-                if (i < steps.length) {
-                    log(steps[i], "info");
-                    i++;
-                    setTimeout(nextStep, 800);
-                } else {
-                    log("SUCCESS. JAILBREAK COMPLETE.", "success");
-                    log("Please verify Smart Banner is active.", "success");
-                }
-            }
-            nextStep();
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.search = `?targetAppId=${id}`; // Set clean ID
+                window.location.href = url.toString();
+            }, 1000);
         }
-    </script>
-</body>
-</html>
+
+        // 5. RESPRING (RESET)
+        function respring() {
+            log("Killing backboardd...", "error");
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.search = ''; // Clear all params
+                window.location.href = url.toString();
+            }, 500);
+        }
+
+        // Enter key for search
+        document.getElementById('repo-search').addEventListener('keyup', (e) => {
+            if(e.key === 'Enter') searchRepo();
+        });
+
+    </
