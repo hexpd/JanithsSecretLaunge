@@ -7,12 +7,14 @@
     
     <!-- DYNAMIC ID INJECTION -->
     <script>
-        // This runs instantly to ensure Safari sees the meta tag
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetId = urlParams.get('id');
-        if (targetId) {
-            document.write('<meta name="apple-itunes-app" content="app-id=' + targetId + '">');
-        }
+        // Wrapped in a function to avoid variable conflicts
+        (function() {
+            var p = new URLSearchParams(window.location.search);
+            var id = p.get('id');
+            if (id) {
+                document.write('<meta name="apple-itunes-app" content="app-id=' + id + '">');
+            }
+        })();
     </script>
 
     <style>
@@ -86,7 +88,7 @@
             width: 300px;
             margin-top: 5px;
             border: 1px solid #004400;
-            display: none; /* Hidden by default */
+            display: none;
             max-height: 200px;
             overflow-y: auto;
             background: #000;
@@ -149,6 +151,7 @@
 
     <script>
         // -- CONFIG --
+        // Now this won't crash because we scoped the top one
         const urlParams = new URLSearchParams(window.location.search);
         const currentId = urlParams.get('id');
         const isDirty = urlParams.has('payload_target') || urlParams.has('panic');
@@ -189,7 +192,7 @@
             resultsContainer.style.display = 'none';
             resultsContainer.innerHTML = '';
             
-            clearTimeout(debounceTimer); // Clear previous timer
+            clearTimeout(debounceTimer); 
 
             if (term.length < 2) {
                 statusLine.innerText = "WAITING FOR INPUT...";
@@ -224,4 +227,64 @@
                             statusLine.innerText = "[-] NO TARGETS FOUND";
                         }
                     })
-                    .catch(err
+                    .catch(err => {
+                        statusLine.innerText = "[!] CONNECTION ERROR";
+                        console.error(err);
+                    });
+            }, 300);
+        });
+
+        // -- PASSWORD LOGIC --
+        const passInput = document.getElementById('password');
+        const msg = document.getElementById('msg');
+
+        passInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                if (passInput.value === 'checkm8') {
+                    msg.innerHTML = '<span class="success">ACCESS GRANTED. DEPLOYING...</span>';
+                    passInput.disabled = true;
+                    setTimeout(() => {
+                        loginOverlay.classList.add('hidden');
+                        consoleDiv.classList.remove('hidden');
+                        startVerboseLog();
+                    }, 1000);
+                } else {
+                    msg.innerHTML = '<span class="error">ACCESS DENIED.</span>';
+                    passInput.value = '';
+                }
+            }
+        });
+
+        // -- FAKE LOGS --
+        const logs = [
+            "[+] heap_spray_init() success",
+            "[*] checking affinity...",
+            "[+] device: iPhone10,6 (d221ap)",
+            "[*] exploiting bootrom...",
+            "[!] checkm8 triggered!",
+            "[*] patching kernel...",
+            "[*] rewriting AMFI...",
+            "[*] remounting / as rw...",
+            "[+] bootstrap injected",
+            "[*] triggering WebKit banner...",
+            "[+] execution complete."
+        ];
+
+        function startVerboseLog() {
+            let i = 0;
+            function printLog() {
+                if (i < logs.length) {
+                    const div = document.createElement('div');
+                    div.className = 'line';
+                    div.textContent = logs[i];
+                    consoleDiv.appendChild(div);
+                    window.scrollTo(0, document.body.scrollHeight);
+                    i++;
+                    setTimeout(printLog, Math.random() * 300 + 50);
+                }
+            }
+            printLog();
+        }
+    </script>
+</body>
+</html>
