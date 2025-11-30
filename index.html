@@ -94,7 +94,7 @@
             padding: 10px;
             overflow-y: auto;
             margin-bottom: 15px;
-            font-size: 11px;
+            font-size: 10px;
             white-space: pre-wrap;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
         }
@@ -103,6 +103,7 @@
         .log-line.success { color: var(--term-green); }
         .log-line.error { color: var(--err); }
         .log-line.sys { color: #aaa; }
+        .log-line.warn { color: var(--warn); }
         
         @keyframes fadeIn { to { opacity: 1; } }
 
@@ -143,6 +144,8 @@
             color: var(--err);
             border-color: var(--err);
             font-size: 10px;
+            width: 100%;
+            padding: 10px;
         }
 
         /* === APP LIST (CYDIA STYLE) === */
@@ -186,6 +189,13 @@
             align-items: center;
             justify-content: center;
         }
+        
+        .auth-btn {
+            width: 100%; 
+            margin-top: 10px; 
+            padding: 10px;
+        }
+
         .hidden { display: none !important; }
 
     </style>
@@ -196,7 +206,12 @@
     <div id="auth-overlay">
         <div style="width: 280px;">
             <div style="margin-bottom: 5px; font-size: 11px;">secure_enclave@iphone:~$ login</div>
+            
             <input type="password" id="auth-pass" placeholder="PASSWORD REQUIRED" autofocus autocomplete="off">
+            
+            <!-- THE BUTTON YOU REQUESTED -->
+            <button class="auth-btn" onclick="checkPass()">AUTHENTICATE</button>
+            
             <div id="auth-status" style="margin-top: 10px; height: 20px; color: var(--err); font-size: 11px;"></div>
         </div>
     </div>
@@ -204,14 +219,14 @@
     <!-- === MAIN INTERFACE === -->
     <div id="main-interface" class="hidden">
         <header>
-            <div class="header-title">checkm8 // v2.0</div>
+            <div class="header-title">checkm8 // v3.1</div>
             <div class="header-status">
                 <span id="usb-status">USB: CONNECTED</span>
             </div>
         </header>
 
         <div id="console-window">
-            <div class="log-line sys">Kern.version: Darwin Kernel Version 21.0.0</div>
+            <div class="log-line sys">Booting xnu-8792.41.9~2/RELEASE_ARM64_T8110...</div>
         </div>
 
         <div class="input-group">
@@ -230,7 +245,7 @@
 
     <script>
         // === CONFIGURATION ===
-        const PASSWORD = "checkm8"; // Change if needed
+        const PASSWORD = "checkm8"; // Change this if you want
         const TERM = document.getElementById('console-window');
         
         // === STATE CHECK ===
@@ -243,58 +258,83 @@
             document.getElementById('auth-pass').focus();
         };
 
-        // 1. AUTHENTICATION
-        document.getElementById('auth-pass').addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                const input = document.getElementById('auth-pass');
-                const status = document.getElementById('auth-status');
-                
-                if (input.value === PASSWORD) {
-                    status.style.color = "var(--term-green)";
-                    status.innerText = "ACCESS GRANTED.";
-                    setTimeout(() => {
-                        document.getElementById('auth-overlay').classList.add('hidden');
-                        document.getElementById('main-interface').classList.remove('hidden');
-                        initTerminal();
-                    }, 500);
-                } else {
-                    status.innerText = "INCORRECT PASSCODE.";
-                    input.value = "";
-                }
+        // 1. AUTHENTICATION LOGIC (Button + Enter Key)
+        function checkPass() {
+            const input = document.getElementById('auth-pass');
+            const status = document.getElementById('auth-status');
+            
+            if (input.value === PASSWORD) {
+                status.style.color = "var(--term-green)";
+                status.innerText = "ACCESS GRANTED. DECRYPTING...";
+                setTimeout(() => {
+                    document.getElementById('auth-overlay').classList.add('hidden');
+                    document.getElementById('main-interface').classList.remove('hidden');
+                    initTerminal();
+                }, 800);
+            } else {
+                status.innerText = "ACCESS DENIED: INCORRECT KEY.";
+                input.value = "";
+                input.focus(); 
             }
+        }
+
+        // Trigger on Enter Key
+        document.getElementById('auth-pass').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') checkPass();
         });
 
-        // 2. TERMINAL BOOT SEQUENCE
+        // 2. VERBOSE TERMINAL BOOT SEQUENCE
         function initTerminal() {
+            // This is the extra verbose stuff you wanted
             const bootLogs = [
                 "Initializing IOKit connection...",
+                "mach_port_allocate: success (0x4103)",
+                "Heap spray initialized: 0x10000000 -> 0x15000000",
                 "Mapping kernel memory...",
-                "Race condition triggered (heap_spray)...",
-                "TF0 obtained. UID set to 0.",
+                "Kernel base: 0xfffffff007004000 (slide: 0x7004000)",
+                "Bypassing KASLR...",
+                "Patching AMFI credentials...",
+                "[WARN] AMFI: code signature validation failed (ignored)",
+                "Race condition triggered (vm_map_copyin)...",
+                "TF0 obtained. UID set to 0 (root).",
                 "Remounting /dev/disk0s1s1 as rw...",
-                "Starting dropbear...",
+                "Modifying host file...",
+                "Injecting dylib: /usr/lib/libsubstrate.dylib",
+                "Reloading SpringBoard settings...",
                 "Exploit chain complete."
             ];
 
+            // If we have a target app, add specific logs for it
             if (activeTarget) {
-                bootLogs.push(`[!] TARGET INJECTION ACTIVE: ${activeTarget}`);
-                bootLogs.push(`[!] SMART BANNER SHOULD BE VISIBLE.`);
+                bootLogs.push(`[+] TARGET FOUND IN NVRAM: ${activeTarget}`);
+                bootLogs.push(`[+] INJECTING SMART BANNER META TAG...`);
+                bootLogs.push(`[+] SUCCESS. BANNER SHOULD BE RENDERED.`);
+            } else {
+                bootLogs.push(`[INFO] No target payload detected. Waiting for user input...`);
             }
 
-            let delay = 0;
-            bootLogs.forEach((msg, index) => {
-                setTimeout(() => {
-                    log(msg, index === bootLogs.length - 1 ? 'success' : 'sys');
-                }, delay);
-                delay += Math.random() * 200 + 100;
-            });
+            let i = 0;
+            function runLog() {
+                if (i < bootLogs.length) {
+                    // Randomize log type for flavor
+                    let type = 'sys';
+                    if (bootLogs[i].includes('WARN')) type = 'warn';
+                    if (bootLogs[i].includes('SUCCESS') || bootLogs[i].includes('complete')) type = 'success';
+                    
+                    log(bootLogs[i], type);
+                    i++;
+                    // Random speed for realistic typing feel
+                    setTimeout(runLog, Math.random() * 200 + 50);
+                }
+            }
+            runLog();
         }
 
         function log(msg, type = 'sys') {
             const line = document.createElement('div');
             line.className = `log-line ${type}`;
-            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
-            line.innerHTML = `<span style="opacity:0.5">[${time}]</span> ${msg}`;
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            line.innerHTML = `<span style="opacity:0.5; font-size: 0.9em;">[${time}]</span> ${msg}`;
             TERM.appendChild(line);
             TERM.scrollTop = TERM.scrollHeight;
         }
@@ -329,46 +369,4 @@
                         <img src="${app.artworkUrl60}" class="pkg-icon">
                         <div class="pkg-info">
                             <div class="pkg-name">${app.trackName}</div>
-                            <div class="pkg-id">${app.bundleId}</div>
-                        </div>
-                        <div class="pkg-action">[INJECT]</div>
-                    `;
-                    // CLICK HANDLER -> RELOAD WITH ID
-                    el.onclick = () => inject(app.trackId, app.trackName);
-                    container.appendChild(el);
-                });
-                log(`Package list updated. ${data.resultCount} items found.`, "success");
-
-            } catch (e) {
-                log("Connection timed out.", "error");
-            }
-        }
-
-        // 4. INJECTION (RELOAD)
-        function inject(id, name) {
-            log(`Preparing injection for ${name}...`, "sys");
-            log(`Writing bundle ID ${id} to NVRAM...`, "sys");
-            
-            setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.search = `?targetAppId=${id}`; // Set clean ID
-                window.location.href = url.toString();
-            }, 1000);
-        }
-
-        // 5. RESPRING (RESET)
-        function respring() {
-            log("Killing backboardd...", "error");
-            setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.search = ''; // Clear all params
-                window.location.href = url.toString();
-            }, 500);
-        }
-
-        // Enter key for search
-        document.getElementById('repo-search').addEventListener('keyup', (e) => {
-            if(e.key === 'Enter') searchRepo();
-        });
-
-    </
+                            <div cl
